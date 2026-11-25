@@ -1,0 +1,602 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b1f33">
+<title>Auditoría RF Campo</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+:root{--bg:#eef1f4;--card:#fff;--ink:#101a26;--mut:#556476;--line:#cfd7df;--head:#0b1f33;--acc:#c2490a;--accink:#fff;--ok:#13783f;--warn:#9a6200;--bad:#b3261e;--okbg:#dff3e7;--warnbg:#fdefd2;--badbg:#fbe1df;--field:#fff}
+@media (prefers-color-scheme:dark){:root{--bg:#0c1218;--card:#161f29;--ink:#e8eef4;--mut:#9aabbd;--line:#2c3a48;--head:#07121e;--acc:#ff7a33;--accink:#1a0b02;--ok:#5fd694;--warn:#ffc252;--bad:#ff8a80;--okbg:#12331f;--warnbg:#3a2c0c;--badbg:#401a18;--field:#0f1720}}
+*{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+body{font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);-webkit-text-size-adjust:100%}
+header{position:sticky;top:0;z-index:5;background:var(--head);color:#fff;padding:calc(10px + env(safe-area-inset-top)) 16px 10px;display:flex;align-items:center;gap:10px}
+header h1{font-size:17px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+header button{background:transparent;color:#fff;border:1px solid #ffffff55;min-height:36px}
+main{max-width:760px;margin:0 auto;padding:12px 12px calc(90px + env(safe-area-inset-bottom))}
+nav{position:fixed;bottom:0;left:0;right:0;z-index:6;display:flex;background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+nav a{flex:1;text-align:center;padding:8px 2px;color:var(--mut);text-decoration:none;font-size:12px}
+nav a span{display:block;font-size:20px;line-height:1.2}
+nav a.on{color:var(--acc);font-weight:700;box-shadow:inset 0 3px var(--acc)}
+.tabs{display:flex;gap:6px;overflow-x:auto;padding:2px 0 10px;scrollbar-width:none}
+.tabs a,.chip{white-space:nowrap;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:99px;padding:7px 14px;text-decoration:none;font-size:14px;min-height:36px}
+.tabs a.on,.chip.on{background:var(--head);color:#fff;border-color:var(--acc)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px}
+.card h2{font-size:16px;margin-bottom:8px}
+.card h3{font-size:14px;margin:12px 0 6px;color:var(--mut);text-transform:uppercase;letter-spacing:.04em}
+label{display:block;font-size:13px;color:var(--mut);margin-bottom:8px}
+input,select,textarea{display:block;width:100%;font:inherit;color:var(--ink);background:var(--field);border:1px solid var(--line);border-radius:8px;padding:10px;min-height:44px;margin-top:3px}
+textarea{min-height:76px;resize:vertical}
+input:focus,select:focus,textarea:focus,button:focus-visible,a:focus-visible{outline:3px solid var(--acc);outline-offset:1px}
+input:disabled,select:disabled,textarea:disabled{opacity:.75}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 8px}
+button,.btn{font:inherit;font-size:14px;font-weight:600;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:9px;padding:9px 14px;min-height:44px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+button.pri,.btn.pri{background:var(--acc);color:var(--accink);border-color:var(--acc)}
+button.dan{color:var(--bad);border-color:var(--bad)}
+button.sm{min-height:36px;padding:5px 10px;font-size:13px}
+button:disabled{opacity:.45}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.row.sp{justify-content:space-between}
+.full{width:100%}
+.mut{color:var(--mut);font-size:13px}
+.tag{display:inline-block;border-radius:6px;padding:2px 8px;font-size:12px;font-weight:700;background:var(--bg);color:var(--ink)}
+.tag.ok{background:var(--okbg);color:var(--ok)}.tag.warn{background:var(--warnbg);color:var(--warn)}.tag.bad{background:var(--badbg);color:var(--bad)}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px;text-align:center}
+.kpi b{display:block;font-size:26px;font-variant-numeric:tabular-nums}
+.kpi small{color:var(--mut)}
+.item{display:block;width:100%;text-align:left;text-decoration:none;color:inherit;border-top:1px solid var(--line);padding:10px 0}
+.item:first-of-type{border-top:0}
+table.par{width:100%;border-collapse:collapse;table-layout:fixed}
+table.par th{font-size:12px;color:var(--mut);font-weight:600;padding:2px 3px;text-align:center}
+table.par th:first-child,table.par td:first-child{width:27%;text-align:left;font-size:13px}
+table.par td{padding:3px;vertical-align:middle}
+table.par input{padding:8px 4px;text-align:center;font-variant-numeric:tabular-nums;margin:0}
+input.oot{background:var(--badbg);border-color:var(--bad)}
+input.chg{border:2px solid var(--acc);font-weight:700}
+.derived{font-size:13px;margin-top:8px}
+.derived .tag{margin:0 4px 4px 0}
+svg.rose{width:100%;max-width:280px;display:block;margin:6px auto}
+.seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;flex:none}
+.seg button{border:0;border-radius:0;min-height:40px;min-width:48px;padding:4px 8px;font-size:12px;border-left:1px solid var(--line)}
+.seg button.on.ok{background:var(--ok);color:var(--card)}.seg button.on.nok{background:var(--bad);color:var(--card)}.seg button.on.na{background:var(--mut);color:var(--card)}
+.chk{border-top:1px solid var(--line);padding:9px 0}
+.chk .row{flex-wrap:nowrap;justify-content:space-between}
+.photos{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;margin-top:8px}
+.ph{position:relative;border:1px solid var(--line);border-radius:8px;overflow:hidden;aspect-ratio:1;background:var(--bg)}
+.ph img{width:100%;height:100%;object-fit:cover;display:block;cursor:pointer}
+.slot{display:flex;justify-content:space-between;align-items:center;gap:8px;border-top:1px solid var(--line);padding:8px 0;flex-wrap:wrap}
+.slot .photos{width:100%;margin:0}
+.filebtn{position:relative;overflow:hidden}
+.filebtn input{position:absolute;inset:0;opacity:0;margin:0;cursor:pointer}
+#modal{position:fixed;inset:0;z-index:20;background:#0009;display:none;align-items:flex-end;justify-content:center}
+#modal.on{display:flex}
+#modal .box{background:var(--card);width:100%;max-width:620px;max-height:92vh;overflow:auto;border-radius:16px 16px 0 0;padding:16px calc(16px) calc(16px + env(safe-area-inset-bottom))}
+#modal img.big{width:100%;border-radius:8px}
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:90px;z-index:30;background:#101a26;color:#fff;padding:10px 16px;border-radius:9px;font-size:14px;display:none;max-width:90%;border:1px solid var(--acc)}
+.dial{font-size:64px;font-weight:800;text-align:center;font-variant-numeric:tabular-nums;line-height:1.1;margin:8px 0}
+.warnbox{background:var(--warnbg);color:var(--warn);border-radius:9px;padding:10px 12px;font-size:13px;margin-bottom:12px}
+pre.msg{white-space:pre-wrap;word-break:break-word;background:var(--bg);border-radius:8px;padding:10px;font:13px/1.45 ui-monospace,monospace;margin-bottom:10px}
+canvas.sign{width:100%;height:150px;border:1px dashed var(--mut);border-radius:8px;background:#fff;touch-action:none}
+#print{display:none}
+@media print{header,nav,main,#modal,#toast{display:none!important}#print{display:block}body{background:#fff}}
+@media (max-width:430px){.g3{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<header><button id="back" aria-label="Volver" hidden>‹</button><h1 id="title">Auditoría RF Campo</h1></header>
+<main></main>
+<nav><a href="#/home" data-v="home"><span>🏠</span>Inicio</a><a href="#/audits" data-v="audits"><span>📋</span>Auditorías</a><a href="#/findings" data-v="findings"><span>⚠️</span>Hallazgos</a><a href="#/tools" data-v="tools"><span>🧭</span>Herramientas</a><a href="#/settings" data-v="settings"><span>⚙️</span>Ajustes</a></nav>
+<div id="modal"></div><div id="toast" role="status"></div><div id="print"></div>
+<script>
+'use strict';
+const VERSION='1.0.0';
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+const now=()=>new Date().toISOString();
+const num=v=>{if(v===null||v===undefined)return null;const s=String(v).trim().replace(',','.');if(s==='')return null;const n=Number(s);return Number.isFinite(n)?n:null};
+const r1=n=>n===null?null:Math.round(n*10)/10;
+const fmt=n=>n===null||n===undefined?'—':String(r1(n)).replace('.',S.settings.dec);
+const pad=n=>String(n).padStart(2,'0');
+const dt=iso=>{if(!iso)return'—';const d=new Date(iso);return`${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`};
+const today=()=>{const d=new Date();return`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`};
+const slug=s=>String(s||'sitio').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^A-Za-z0-9_-]+/g,'_').slice(0,60)||'sitio';
+const getPath=(o,p)=>p.split('.').reduce((a,k)=>a?.[k],o);
+const setPath=(o,p,v)=>{const k=p.split('.'),last=k.pop();k.reduce((a,x)=>a[x]??(a[x]={}),o)[last]=v};
+
+/* ---------- Catálogos ---------- */
+const AREAS=['O&M','Operaciones (NOC)','Optimización RF','Transmisión','Energía','Infraestructura','Seguridad'];
+const SEVS={'Crítica':{h:4,c:'bad',d:'Servicio caído o riesgo a personas'},'Alta':{h:24,c:'bad',d:'Degradación fuerte de servicio'},'Media':{h:72,c:'warn',d:'Afecta calidad o puede escalar'},'Baja':{h:360,c:'',d:'Mejora o preventivo'}};
+const STATES=['Abierto','Escalado','En proceso','Resuelto','Cerrado'];
+const DONE=['Resuelto','Cerrado'];
+const CATS={'Parámetros RF':'Optimización RF','Cruce de sectores':'O&M','Antena / herrajes':'O&M','Cableado / conectores':'O&M','RET / AISG':'O&M','RRU / equipo de radio':'O&M','Alarmas / servicio':'Operaciones (NOC)','Obstrucción / entorno':'Optimización RF','Interferencia':'Optimización RF','Energía':'Energía','Transmisión':'Transmisión','Torre / infraestructura':'Infraestructura','Climatización':'O&M','Vandalismo / hurto':'Seguridad','Seguridad industrial':'Infraestructura','Otro':'O&M'};
+const REASONS=['Ajuste a diseño','Optimización de cobertura','Reducción de sobrealcance (overshooting)','Reducción de interferencia','Atención a reclamo','Mejora de KPI','Corrección de cruce de sectores','Obstrucción en el sector','Otro'];
+const VISIT_REASONS=['Auditoría programada','Optimización','KPI degradado','Reclamo de cliente','Post-instalación / swap','Drive test','Falla / emergencia'];
+const BANDS=['GSM 850','GSM 900','UMTS 850','UMTS 1900','LTE 700','LTE 850','LTE 1800','LTE AWS','LTE 1900','LTE 2600','NR 3500'];
+const SAFETY=[['perm','Acceso al sitio autorizado'],['ats','Análisis de riesgo (ATS) realizado'],['epp','EPP completo: casco, arnés, línea de vida'],['alt','Personal certificado para trabajo en altura'],['clima','Condiciones climáticas aptas'],['rf','Exposición RF controlada (potencia reducida o distancia segura)'],['noc','NOC notificado del inicio y ventana de trabajo'],['resc','Plan de rescate y comunicación definidos']];
+const CHECK=[
+['Antenas y radio',[['ant_fij','Fijación y herrajes de antenas','Antena / herrajes'],['ant_rad','Radomos sin daños','Antena / herrajes'],['jump','Jumpers sin dobleces ni daños','Cableado / conectores'],['conn','Conectores sellados contra intemperie','Cableado / conectores'],['ret','RET / AISG conectado y respondiendo','RET / AISG'],['rru','RRU fijas y sin alarmas','RRU / equipo de radio'],['etiq','Etiquetado de cables y sectores','Cableado / conectores']]],
+['Torre e infraestructura',[['torre','Estructura sin corrosión ni deformaciones','Torre / infraestructura'],['torn','Tornillería completa','Torre / infraestructura'],['bal','Balizaje operativo','Torre / infraestructura'],['tierra','Puesta a tierra y pararrayos','Torre / infraestructura'],['lvida','Escalera y línea de vida','Seguridad industrial']]],
+['Energía y sala de equipos',[['ac','Energía comercial y tablero','Energía'],['rect','Rectificador sin alarmas','Energía'],['bat','Banco de baterías completo y en buen estado','Energía'],['planta','Planta eléctrica y combustible','Energía'],['aa','Climatización','Climatización']]],
+['Transmisión',[['mw','Antenas MW fijas y alineadas','Transmisión'],['fo','Fibra / cableado IF en buen estado','Transmisión']]],
+['Seguridad física y entorno',[['cerca','Cerca, puertas y candados','Vandalismo / hurto'],['vand','Sin señales de hurto o vandalismo','Vandalismo / hurto'],['los','Sectores sin obstrucciones cercanas','Obstrucción / entorno'],['interf','Sin repetidores o fuentes de interferencia visibles','Interferencia']]],
+['Verificación al finalizar',[['alarm','Alarmas verificadas con NOC','Alarmas / servicio'],['voz','Prueba de voz exitosa','Alarmas / servicio'],['datos','Prueba de datos exitosa','Alarmas / servicio'],['kpi','Seguimiento de KPI acordado','Parámetros RF'],['limp','Sitio limpio y cerrado','Otro']]]];
+const SITE_SLOTS=[['s_general','Vista general del sitio',true],['s_torre','Torre / estructura completa',true],['s_acceso','Acceso y cerca',false],['s_sala','Sala de equipos / gabinetes',false],['s_energia','Energía y baterías',false],...[0,45,90,135,180,225,270,315].map(a=>['pan_'+a,`Panorámica ${a}°`,false])];
+const ANT_SLOTS=[['inst','Instalación de la antena',true],['etq','Etiqueta / serial',false],['az_a','Azimut ANTES',false],['tilt_a','Inclinómetro ANTES',true],['az_d','Azimut DESPUÉS',false],['tilt_d','Inclinómetro DESPUÉS',false],['vista','Vista desde el sector (entorno)',true]];
+
+/* ---------- Almacenamiento (IndexedDB con respaldo en memoria) ---------- */
+const DB={db:null,mem:{audits:new Map,photos:new Map,sites:new Map,meta:new Map},
+ open(){return new Promise(res=>{try{const q=indexedDB.open('auditoriaRF',1);
+  q.onupgradeneeded=()=>{const d=q.result;d.createObjectStore('audits',{keyPath:'id'});d.createObjectStore('photos',{keyPath:'id'}).createIndex('audit','auditId');d.createObjectStore('sites',{keyPath:'code'});d.createObjectStore('meta',{keyPath:'id'})};
+  q.onsuccess=()=>{this.db=q.result;res(true)};q.onerror=()=>res(false);setTimeout(()=>res(!!this.db),3000)}catch(e){res(false)}})},
+ run(store,mode,fn){return new Promise((res,rej)=>{const t=this.db.transaction(store,mode);const q=fn(t.objectStore(store));t.oncomplete=()=>res(q?.result);t.onerror=t.onabort=()=>rej(t.error)})},
+ async all(s){return this.db?this.run(s,'readonly',o=>o.getAll()):[...this.mem[s].values()]},
+ async get(s,k){return this.db?this.run(s,'readonly',o=>o.get(k)):this.mem[s].get(k)},
+ async put(s,v){if(!this.db){this.mem[s].set(v.id??v.code,v);return}try{await this.run(s,'readwrite',o=>{o.put(v)})}catch(e){toast('⚠️ No se pudo guardar. Revise el espacio libre del teléfono.');throw e}},
+ async del(s,k){if(!this.db){this.mem[s].delete(k);return}await this.run(s,'readwrite',o=>{o.delete(k)})},
+ async photos(aid){return this.db?this.run('photos','readonly',o=>o.index('audit').getAll(aid)):[...this.mem.photos.values()].filter(p=>p.auditId===aid)}
+};
+
+/* ---------- Estado ---------- */
+const DEFAULTS={id:'settings',auditor:'',company:'',declination:-13.4,tiltZero:0,dec:',',stamp:true,tol:{az:5,mt:1,et:0.5,h:1},contacts:{},lastBackup:null};
+const S={settings:structuredClone(DEFAULTS),audits:[],sites:[],photos:[],urls:new Map,filter:{area:'',sev:'',st:'open'},q:''};
+const saveSettings=()=>DB.put('meta',S.settings);
+let saveTimer=null,dirty=new Set;
+function touch(a){a.updatedAt=now();dirty.add(a);clearTimeout(saveTimer);saveTimer=setTimeout(flush,250)}
+async function flush(){clearTimeout(saveTimer);const list=[...dirty];dirty.clear();for(const a of list)await DB.put('audits',a)}
+
+/* ---------- Modelo ---------- */
+const newBand=(name='LTE 1800')=>({id:uid(),name,plan:{et:'',pci:''},found:{et:''},final:{et:''},test:{pci:'',rsrp:'',sinr:'',dl:''}});
+const newAnt=(name='Antena 1')=>({id:uid(),name,model:'',serial:'',vbw:'6,5',plan:{az:'',mt:'',h:''},found:{az:'',mt:'',h:''},final:{az:'',mt:'',h:''},reason:'',authBy:'',changedAt:'',notes:'',bands:[newBand()]});
+const newSector=i=>({id:uid(),name:'Sector '+i,antennas:[newAnt()]});
+function newAudit(site){
+ const a={id:uid(),createdAt:now(),updatedAt:now(),status:'en_curso',closedAt:null,
+  site:{code:'',name:'',region:'',state:'',type:'Torre autosoportada',lat:'',lon:'',height:'',address:''},
+  visit:{date:today(),start:new Date().toTimeString().slice(0,5),end:'',auditors:S.settings.auditor,crew:'',reason:VISIT_REASONS[0],ticket:'',instrument:'',weather:'',gps:null},
+  safety:{},check:{},sectors:[1,2,3].map(newSector),findings:[],seq:0,conclusion:'',receivedBy:'',signature:'',closeNote:''};
+ if(site){Object.assign(a.site,site.info);a.sectors=structuredClone(site.sectors);a.sectors.forEach(s=>{s.id=uid();s.antennas.forEach(n=>{n.id=uid();n.bands.forEach(b=>b.id=uid())})})}
+ return a}
+const antennas=a=>a.sectors.flatMap((s,si)=>s.antennas.map((n,ai)=>({s,n,si,ai,p:`sectors.${si}.antennas.${ai}`})));
+
+/* ---------- Cálculos RF ---------- */
+const angDiff=(a,b)=>((a-b+540)%360)-180;
+const delta=(k,x,y)=>{const a=num(x),b=num(y);if(a===null||b===null)return null;return k==='az'?angDiff(a,b):a-b};
+const outTol=(k,val,plan)=>{const d=delta(k,val,plan);return d!==null&&Math.abs(d)>S.settings.tol[k]+1e-9};
+const changed=(k,found,fin)=>{const d=delta(k,fin,found);return d!==null&&Math.abs(d)>1e-9};
+const antChanged=n=>['az','mt','h'].some(k=>changed(k,n.found[k],n.final[k]))||n.bands.some(b=>changed('et',b.found.et,b.final.et));
+function antStats(n){
+ const items=[...['az','mt','h'].map(k=>({k,p:n.plan[k],f:n.found[k],z:n.final[k]})),...n.bands.map(b=>({k:'et',p:b.plan.et,f:b.found.et,z:b.final.et}))];
+ return{changes:items.filter(i=>changed(i.k,i.f,i.z)).length,ootFound:items.filter(i=>outTol(i.k,i.f,i.p)).length,ootFinal:items.filter(i=>outTol(i.k,i.z,i.p)).length,missFound:items.filter(i=>i.k!=='h'&&num(i.f)===null).length,missFinal:items.filter(i=>i.k!=='h'&&num(i.z)===null).length}}
+function footprint(h,tilt,vbw){
+ if(h===null||tilt===null||h<=0)return null;const d=g=>g>0&&g<90?h/Math.tan(g*Math.PI/180):null;
+ return{tilt,near:d(tilt+(vbw||6.5)/2),main:d(tilt),far:d(tilt-(vbw||6.5)/2)}}
+const dist=m=>m===null?'horizonte':m>=1000?fmt(m/1000)+' km':Math.round(m)+' m';
+function haversine(a,b){const R=6371000,t=Math.PI/180,dl=(b.lat-a.lat)*t,dn=(b.lon-a.lon)*t;const x=Math.sin(dl/2)**2+Math.cos(a.lat*t)*Math.cos(b.lat*t)*Math.sin(dn/2)**2;return 2*R*Math.asin(Math.sqrt(x))}
+function bearing(a,b){const t=Math.PI/180,y=Math.sin((b.lon-a.lon)*t)*Math.cos(b.lat*t),x=Math.cos(a.lat*t)*Math.sin(b.lat*t)-Math.sin(a.lat*t)*Math.cos(b.lat*t)*Math.cos((b.lon-a.lon)*t);return(Math.atan2(y,x)/t+360)%360}
+/* PCI detectado distinto al esperado: ¿pertenece a otro sector en la misma banda? */
+function pciCheck(a,si,b){const det=String(b.test.pci||'').trim(),exp=String(b.plan.pci||'').trim();if(!det||!exp)return null;if(det===exp)return{ok:true,msg:`PCI ${det} correcto (${b.name})`};
+ for(let i=0;i<a.sectors.length;i++)if(i!==si&&a.sectors[i].antennas.some(n=>n.bands.some(x=>x.name===b.name&&String(x.plan.pci).trim()===det)))return{ok:false,msg:`Posible cruce en ${b.name}: se mide PCI ${det}, que pertenece a ${a.sectors[i].name} (esperado ${exp})`};
+ return{ok:false,msg:`PCI distinto en ${b.name}: esperado ${exp}, medido ${det}`}}
+function rose(list,size=240){
+ const c=120,pt=(az,r)=>[c+r*Math.sin(az*Math.PI/180),c-r*Math.cos(az*Math.PI/180)].map(v=>v.toFixed(1));
+ let g=`<circle cx="120" cy="120" r="92" fill="none" stroke="#8494a5" stroke-width="1"/><circle cx="120" cy="120" r="46" fill="none" stroke="#8494a5" stroke-dasharray="2 4"/>`;
+ for(let a=0;a<360;a+=30){const[x,y]=pt(a,106);g+=`<text x="${x}" y="${+y+4}" text-anchor="middle" font-size="10" fill="#8494a5">${a===0?'N':a+'°'}</text>`}
+ const line=(v,r,col,w,dash)=>{const n=num(v);if(n===null)return'';const[x,y]=pt(n,r);return`<line x1="120" y1="120" x2="${x}" y2="${y}" stroke="${col}" stroke-width="${w}" ${dash?'stroke-dasharray="6 4"':''} stroke-linecap="round"/>`};
+ for(const i of list){g+=line(i.plan,92,'#3b82f6',2,true)+line(i.found,82,'#e8590c',4)+line(i.final,70,'#16a34a',3);const n=num(i.final)??num(i.found)??num(i.plan);if(n!==null&&i.label){const[x,y]=pt(n+9,62);g+=`<text x="${x}" y="${y}" font-size="11" font-weight="700" text-anchor="middle" fill="#8494a5">${esc(i.label)}</text>`}}
+ return`<svg class="rose" viewBox="0 0 240 240" width="${size}" height="${size}" role="img" aria-label="Diagrama de azimuts">${g}</svg><div style="text-align:center;font-size:12px"><span style="color:#3b82f6">╌ Plan</span> &nbsp; <span style="color:#e8590c">━ Encontrado</span> &nbsp; <span style="color:#16a34a">━ Final</span></div>`}
+
+/* ---------- Hallazgos ---------- */
+function addFinding(a,data){a.seq=(a.seq||0)+1;const cat=data.category||'Otro';
+ const f={id:uid(),num:a.seq,title:'',category:cat,severity:'Media',area:CATS[cat]||'O&M',antennaId:'',itemKey:'',desc:'',action:'',status:'Abierto',createdAt:now(),escalatedAt:null,due:null,ticket:'',history:[{at:now(),text:'Hallazgo registrado'}],...data};
+ a.findings.push(f);touch(a);return f}
+const fcode=(a,f)=>`H-${slug(a.site.code)}-${pad(f.num)}-${f.id.slice(-3).toUpperCase()}`;
+const overdue=f=>f.due&&!DONE.includes(f.status)&&new Date(f.due)<new Date();
+const where=(a,f)=>{const x=antennas(a).find(i=>i.n.id===f.antennaId);return x?`${x.s.name} · ${x.n.name}`:'Sitio'};
+const allFindings=()=>S.audits.flatMap(a=>a.findings.map(f=>({a,f})));
+function findingText(a,f){const g=a.visit.gps,lat=g?g.lat.toFixed(6):a.site.lat,lon=g?g.lon.toFixed(6):a.site.lon;
+ return[`*ESCALAMIENTO ${f.severity.toUpperCase()} — ${f.area}*`,`Código: ${fcode(a,f)}`,`Sitio: ${a.site.code} ${a.site.name}`.trim(),`Región: ${[a.site.region,a.site.state].filter(Boolean).join(' / ')||'—'}`,`Ubicación: ${where(a,f)}`,`Categoría: ${f.category}`,`Hallazgo: ${f.title||'(sin título)'}`,f.desc&&`Detalle: ${f.desc}`,f.action&&`Acción requerida: ${f.action}`,`Detectado: ${dt(f.createdAt)}`,`Plazo sugerido: ${SEVS[f.severity].h} h`,f.ticket&&`Ticket: ${f.ticket}`,lat&&lon&&`Mapa: https://maps.google.com/?q=${encodeURIComponent(lat+','+lon)}`,`Auditor: ${a.visit.auditors||'—'}`].filter(Boolean).join('\n')}
+
+/* ---------- Control de calidad ---------- */
+function validate(a){const err=[],warn=[];
+ if(!a.site.code.trim())err.push('Falta el código del sitio');
+ if(!a.visit.auditors.trim())err.push('Falta el nombre del auditor');
+ if(!a.visit.gps)warn.push('No se capturó la posición GPS en sitio');
+ else{const la=num(a.site.lat),lo=num(a.site.lon);if(la!==null&&lo!==null){const d=haversine({lat:la,lon:lo},a.visit.gps);if(d>150)warn.push(`El GPS está a ${dist(d)} de las coordenadas del plan`)}}
+ const sm=SAFETY.filter(([k])=>!a.safety[k]).length,sn=SAFETY.filter(([k])=>a.safety[k]==='nok').length;
+ if(sm)err.push(`Seguridad: ${sm} punto(s) sin responder`);if(sn)warn.push(`Seguridad: ${sn} punto(s) No OK`);
+ for(const{s,n,si}of antennas(a)){const t=antStats(n),w=`${s.name} · ${n.name}`;
+  if(t.missFound)err.push(`${w}: faltan ${t.missFound} valor(es) encontrados`);
+  if(t.missFinal)err.push(`${w}: faltan ${t.missFinal} valor(es) finales`);
+  if(t.changes&&(!n.reason||!n.authBy.trim()))err.push(`${w}: hay cambios sin motivo o sin quién autoriza`);
+  if(t.ootFinal&&!a.findings.some(f=>f.antennaId===n.id))err.push(`${w}: queda fuera de tolerancia y no tiene hallazgo`);
+  for(const b of n.bands){const c=pciCheck(a,si,b);if(c&&!c.ok)warn.push(`${w}: ${c.msg}`)}
+  for(const[k,l,req]of ANT_SLOTS){const need=req||(k==='tilt_d'&&(changed('mt',n.found.mt,n.final.mt)||n.bands.some(b=>changed('et',b.found.et,b.final.et))))||(k==='az_d'&&changed('az',n.found.az,n.final.az));if(need&&!S.photos.some(p=>p.auditId===a.id&&p.tag===`${n.id}:${k}`))warn.push(`${w}: falta foto "${l}"`)}}
+ for(const[k,l,req]of SITE_SLOTS)if(req&&!S.photos.some(p=>p.auditId===a.id&&p.tag===k))warn.push(`Falta foto "${l}"`);
+ const items=CHECK.flatMap(g=>g[1]),cm=items.filter(([k])=>!a.check[k]?.s).length;if(cm)warn.push(`Checklist: ${cm} punto(s) sin responder`);
+ for(const[k,l]of items)if(a.check[k]?.s==='nok'&&!a.findings.some(f=>f.itemKey===k))err.push(`Checklist "${l}" está No OK y no tiene hallazgo`);
+ for(const f of a.findings){if(!f.title.trim())err.push(`Hallazgo ${pad(f.num)} sin título`);if(['Crítica','Alta'].includes(f.severity)&&f.status==='Abierto')warn.push(`Hallazgo ${pad(f.num)} (${f.severity}) aún no se ha escalado`)}
+ if(!a.signature)warn.push('Falta la firma del auditor');
+ return{err,warn}}
+
+/* ---------- Archivos, CSV, ZIP, fotos ---------- */
+function download(name,blob){const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),60000)}
+async function shareOrDownload(name,blob,text){const file=new File([blob],name,{type:blob.type});
+ if(navigator.canShare?.({files:[file]})){try{await navigator.share({files:[file],title:name,text});return}catch(e){if(e.name==='AbortError')return}}
+ download(name,blob);toast('Archivo guardado en Descargas')}
+function csvCell(v){if(typeof v==='number')v=String(v).replace('.',S.settings.dec);v=String(v??'');if(/^[=+\-@\t\r]/.test(v)&&num(v)===null)v="'"+v;return/[";\n\r]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v}
+const toCSV=rows=>'﻿'+rows.map(r=>r.map(csvCell).join(';')).join('\r\n');
+const csvBlob=rows=>new Blob([toCSV(rows)],{type:'text/csv'});
+const nv=v=>num(v)===null?String(v??''):r1(num(v));
+function paramRows(list){const h=['sitio','nombre','region','fecha','auditor','sector','antena','modelo','banda','azimut_plan','azimut_encontrado','azimut_final','tilt_mec_plan','tilt_mec_encontrado','tilt_mec_final','altura_plan','altura_encontrada','altura_final','tilt_elec_plan','tilt_elec_encontrado','tilt_elec_final','tilt_total_final','pci_plan','pci_medido','rsrp_dbm','sinr_db','dl_mbps','hubo_cambio','fuera_tolerancia_final','motivo','autorizado_por','fecha_cambio','observaciones','estado_auditoria'];
+ const rows=[h];for(const a of list)for(const{s,n}of antennas(a))for(const b of n.bands){const mt=num(n.final.mt),et=num(b.final.et);
+  const chg=['az','mt','h'].some(k=>changed(k,n.found[k],n.final[k]))||changed('et',b.found.et,b.final.et),oot=['az','mt','h'].some(k=>outTol(k,n.final[k],n.plan[k]))||outTol('et',b.final.et,b.plan.et);
+  rows.push([a.site.code,a.site.name,a.site.region,a.visit.date,a.visit.auditors,s.name,n.name,n.model,b.name,nv(n.plan.az),nv(n.found.az),nv(n.final.az),nv(n.plan.mt),nv(n.found.mt),nv(n.final.mt),nv(n.plan.h),nv(n.found.h),nv(n.final.h),nv(b.plan.et),nv(b.found.et),nv(b.final.et),mt!==null&&et!==null?r1(mt+et):'',b.plan.pci,b.test.pci,nv(b.test.rsrp),nv(b.test.sinr),nv(b.test.dl),chg?'SI':'NO',oot?'SI':'NO',n.reason,n.authBy,n.changedAt?dt(n.changedAt):'',n.notes,a.status==='cerrada'?'Cerrada':'En curso'])}
+ return rows}
+function findingRows(pairs){return[['codigo','sitio','nombre','region','ubicacion','severidad','area','categoria','titulo','detalle','accion_requerida','estado','ticket','creado','escalado','vence','vencido','auditor','historial'],...pairs.map(({a,f})=>[fcode(a,f),a.site.code,a.site.name,a.site.region,where(a,f),f.severity,f.area,f.category,f.title,f.desc,f.action,f.status,f.ticket,dt(f.createdAt),f.escalatedAt?dt(f.escalatedAt):'',f.due?dt(f.due):'',overdue(f)?'SI':'NO',a.visit.auditors,f.history.map(h=>`${dt(h.at)} ${h.text}`).join(' | ')])]}
+
+function parseCSV(text){text=text.replace(/^﻿/,'');const first=text.split(/\r?\n/)[0],d=[';','\t',','].map(c=>[c,first.split(c).length]).sort((a,b)=>b[1]-a[1])[0][0];
+ const rows=[];let r=[],c='',q=false;for(let i=0;i<text.length;i++){const ch=text[i];if(q){if(ch==='"'){if(text[i+1]==='"'){c+='"';i++}else q=false}else c+=ch}else if(ch==='"'&&c==='')q=true;else if(ch===d){r.push(c);c=''}else if(ch==='\n'||ch==='\r'){if(ch==='\r'&&text[i+1]==='\n')i++;r.push(c);rows.push(r);r=[];c=''}else c+=ch}
+ if(c!==''||r.length){r.push(c);rows.push(r)}return rows.filter(x=>x.some(v=>v.trim()))}
+const SITE_COLS=['sitio','nombre','region','estado','latitud','longitud','altura_torre','sector','antena','modelo','azimut','tilt_mec','altura','banda','tilt_elec','pci','apertura_vertical'];
+function sitesFromCSV(text){const rows=parseCSV(text);if(rows.length<2)throw new Error('El archivo no tiene filas de datos');
+ const head=rows[0].map(h=>h.normalize('NFD').replace(/[̀-ͯ]/g,'').trim().toLowerCase().replace(/[^a-z0-9]+/g,'_'));
+ const miss=['sitio','sector'].filter(k=>!head.includes(k));if(miss.length)throw new Error('Faltan columnas: '+miss.join(', '));
+ const out=new Map;for(const row of rows.slice(1)){const o={};head.forEach((h,i)=>o[h]=(row[i]??'').trim());if(!o.sitio)continue;
+  let s=out.get(o.sitio);if(!s)out.set(o.sitio,s={code:o.sitio,info:{code:o.sitio,name:o.nombre||'',region:o.region||'',state:o.estado||'',lat:o.latitud||'',lon:o.longitud||'',height:o.altura_torre||''},sectors:[]});
+  const sn=/^\d+$/.test(o.sector)?'Sector '+o.sector:o.sector||'Sector 1';let sec=s.sectors.find(x=>x.name===sn);if(!sec)s.sectors.push(sec={id:uid(),name:sn,antennas:[]});
+  const an=o.antena||'Antena 1';let n=sec.antennas.find(x=>x.name===an);if(!n){n=newAnt(an);n.bands=[];n.model=o.modelo||'';n.plan={az:o.azimut||'',mt:o.tilt_mec||'',h:o.altura||''};if(o.apertura_vertical)n.vbw=o.apertura_vertical;sec.antennas.push(n)}
+  const b=newBand(o.banda||'Banda 1');b.plan={et:o.tilt_elec||'',pci:o.pci||''};n.bands.push(b)}
+ if(!out.size)throw new Error('No se encontró ningún sitio');return[...out.values()]}
+function demoSite(){const rows=[SITE_COLS.join(';')];[[1,20,142,'101'],[2,140,143,'102'],[3,260,141,'103']].forEach(([s,az,,pci])=>{rows.push(`DEMO001;Sitio de ejemplo;Capital;Distrito Capital;10,500000;-66,900000;36;${s};Panel A;Genérica 65°;${az};2;32;LTE 1800;4;${pci};6,5`);rows.push(`DEMO001;;;;;;;${s};Panel A;;;;;UMTS 850;5;${s*40};`)});return sitesFromCSV(rows.join('\n'))[0]}
+
+const CRC=Uint32Array.from({length:256},(_,n)=>{for(let k=0;k<8;k++)n=n&1?0xedb88320^(n>>>1):n>>>1;return n>>>0});
+const crc32=u=>{let c=0xffffffff;for(let i=0;i<u.length;i++)c=CRC[(c^u[i])&255]^(c>>>8);return(c^0xffffffff)>>>0};
+async function zip(files){const enc=new TextEncoder,parts=[],central=[];let off=0;const d=new Date,time=d.getHours()<<11|d.getMinutes()<<5|d.getSeconds()>>1,date=(d.getFullYear()-1980)<<9|(d.getMonth()+1)<<5|d.getDate();
+ for(const f of files){const data=new Uint8Array(await new Blob([f.data]).arrayBuffer()),name=enc.encode(f.name),crc=crc32(data);
+  const h=new DataView(new ArrayBuffer(30));h.setUint32(0,0x04034b50,true);h.setUint16(4,20,true);h.setUint16(6,0x800,true);h.setUint16(10,time,true);h.setUint16(12,date,true);h.setUint32(14,crc,true);h.setUint32(18,data.length,true);h.setUint32(22,data.length,true);h.setUint16(26,name.length,true);
+  const c=new DataView(new ArrayBuffer(46));c.setUint32(0,0x02014b50,true);c.setUint16(4,20,true);c.setUint16(6,20,true);c.setUint16(8,0x800,true);c.setUint16(12,time,true);c.setUint16(14,date,true);c.setUint32(16,crc,true);c.setUint32(20,data.length,true);c.setUint32(24,data.length,true);c.setUint16(28,name.length,true);c.setUint32(42,off,true);
+  parts.push(h,name,data);central.push(c,name);off+=30+name.length+data.length}
+ const size=central.reduce((s,x)=>s+x.byteLength,0),e=new DataView(new ArrayBuffer(22));e.setUint32(0,0x06054b50,true);e.setUint16(8,files.length,true);e.setUint16(10,files.length,true);e.setUint32(12,size,true);e.setUint32(16,off,true);
+ return new Blob([...parts,...central,e],{type:'application/zip'})}
+async function unzip(blob){const buf=await blob.arrayBuffer(),v=new DataView(buf),dec=new TextDecoder;let e=buf.byteLength-22;while(e>=0&&v.getUint32(e,true)!==0x06054b50)e--;if(e<0)throw new Error('No es un archivo ZIP válido');
+ const out=new Map;let p=v.getUint32(e+16,true);for(let i=0;i<v.getUint16(e+10,true);i++){const m=v.getUint16(p+10,true),cs=v.getUint32(p+20,true),nl=v.getUint16(p+28,true),xl=v.getUint16(p+30,true),cl=v.getUint16(p+32,true),lo=v.getUint32(p+42,true);const name=dec.decode(new Uint8Array(buf,p+46,nl));const start=lo+30+v.getUint16(lo+26,true)+v.getUint16(lo+28,true);let data=new Blob([new Uint8Array(buf,start,cs)]);
+  if(m===8)data=await new Response(data.stream().pipeThrough(new DecompressionStream('deflate-raw'))).blob();else if(m!==0)throw new Error('Compresión ZIP no soportada');
+  out.set(name,data);p+=46+nl+xl+cl}return out}
+
+const photoName=(a,p,i)=>`fotos/${slug(a.site.code)}/${pad(i+1)}_${slug(photoLabel(a,p))}_${p.id}.jpg`;
+function photoLabel(a,p){if(p.tag.startsWith('f:')){const f=a.findings.find(x=>x.id===p.tag.slice(2));return f?`Hallazgo ${pad(f.num)} - ${f.title||f.category}`:'Hallazgo'}
+ const[id,k]=p.tag.split(':');if(k){const x=antennas(a).find(i=>i.n.id===id),l=ANT_SLOTS.find(s=>s[0]===k)?.[1]||k;return x?`${x.s.name} ${x.n.name} - ${l}`:l}return SITE_SLOTS.find(s=>s[0]===p.tag)?.[1]||'Foto'}
+function loadImage(blob){return new Promise((res,rej)=>{const u=URL.createObjectURL(blob),i=new Image;i.onload=()=>{URL.revokeObjectURL(u);res(i)};i.onerror=()=>{URL.revokeObjectURL(u);rej(new Error('Imagen no válida'))};i.src=u})}
+async function addPhoto(a,tag,file){const img=await loadImage(file),k=Math.min(1,1600/Math.max(img.naturalWidth,img.naturalHeight));
+ const c=document.createElement('canvas');c.width=Math.max(1,Math.round(img.naturalWidth*k));c.height=Math.max(1,Math.round(img.naturalHeight*k));const x=c.getContext('2d');x.drawImage(img,0,0,c.width,c.height);
+ const p={id:uid(),auditId:a.id,tag,caption:'',takenAt:new Date(file.lastModified||Date.now()).toISOString(),gps:a.visit.gps};
+ if(S.settings.stamp){const fs=Math.max(11,Math.round(c.width/48)),lines=[`${a.site.code||'SIN CÓDIGO'} · ${photoLabel(a,p)}`,`${dt(p.takenAt)}${p.gps?` · GPS visita ${p.gps.lat.toFixed(5)}, ${p.gps.lon.toFixed(5)}`:''}`];
+  x.fillStyle='rgba(0,0,0,.6)';x.fillRect(0,c.height-fs*3.1,c.width,fs*3.1);x.fillStyle='#fff';x.font=`600 ${fs}px sans-serif`;lines.forEach((l,i)=>x.fillText(l,fs*.6,c.height-fs*1.8+i*fs*1.3,c.width-fs))}
+ p.blob=await new Promise(r=>c.toBlob(r,'image/jpeg',.82));await DB.put('photos',p);S.photos.push(p);touch(a)}
+const url=p=>{let u=S.urls.get(p.id);if(!u)S.urls.set(p.id,u=URL.createObjectURL(p.blob));return u};
+const dataURL=b=>new Promise(r=>{const f=new FileReader;f.onload=()=>r(f.result);f.readAsDataURL(b)});
+
+/* ---------- Informe ---------- */
+async function reportBody(a){const ph=S.photos.filter(p=>p.auditId===a.id),src=new Map;for(const p of ph)src.set(p.id,await dataURL(p.blob));
+ const T=(head,rows)=>`<table><thead><tr>${head.map(h=>`<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${rows.join('')}</tbody></table>`;
+ const td=(v,c='')=>`<td class="${c}">${esc(v===''||v===null||v===undefined?'—':v)}</td>`;
+ const pics=list=>list.length?`<div class="pics">${list.map(p=>`<figure><img src="${src.get(p.id)}" alt=""><figcaption>${esc(photoLabel(a,p))}${p.caption?' — '+esc(p.caption):''}<br>${esc(dt(p.takenAt))}</figcaption></figure>`).join('')}</div>`:'';
+ const stats=antennas(a).map(x=>antStats(x.n)),sum=k=>stats.reduce((s,t)=>s+t[k],0),v=validate(a);
+ const params=antennas(a).map(({s,n})=>{const row=(l,k,p,f,z)=>{const d=delta(k,f,p);return`<tr>${td(l)}${td(p)}${td(f,outTol(k,f,p)?'bad':'')}${td(z,outTol(k,z,p)?'bad':changed(k,f,z)?'chg':'')}${td(d===null?'':fmt(d))}</tr>`};
+  const rows=[row('Azimut (°)','az',n.plan.az,n.found.az,n.final.az),row('Tilt mecánico (°)','mt',n.plan.mt,n.found.mt,n.final.mt),row('Altura (m)','h',n.plan.h,n.found.h,n.final.h),...n.bands.map(b=>row(`Tilt eléctrico ${b.name} (°)`,'et',b.plan.et,b.found.et,b.final.et))];
+  const cov=n.bands.map(b=>{const f=z=>{const m=num(n[z].mt),e=num(b[z].et),h=num(n[z].h)??num(n.plan.h);return m===null||e===null?null:footprint(h,m+e,num(n.vbw))};const x=f('found'),y=f('final');return x||y?`<li>${esc(b.name)}: haz principal ${x?`antes ${esc(dist(x.main))} (tilt total ${esc(fmt(x.tilt))}°)`:''} ${y?`→ final ${esc(dist(y.main))} (tilt total ${esc(fmt(y.tilt))}°)`:''}</li>`:''}).join('');
+  const tests=n.bands.filter(b=>Object.values(b.test).some(Boolean));
+  return`<h3>${esc(s.name)} · ${esc(n.name)} ${n.model?'— '+esc(n.model):''} ${n.serial?'(S/N '+esc(n.serial)+')':''}</h3>${T(['Parámetro','Plan','Encontrado','Final','Desv. encontrada'],rows)}${antChanged(n)?`<p><b>Motivo:</b> ${esc(n.reason||'—')} · <b>Autoriza:</b> ${esc(n.authBy||'—')} · <b>Hora:</b> ${esc(dt(n.changedAt))}</p>`:''}${n.notes?`<p><b>Observaciones:</b> ${esc(n.notes)}</p>`:''}${cov?`<p><b>Cobertura teórica (terreno plano):</b></p><ul>${cov}</ul>`:''}${tests.length?T(['Banda','PCI plan','PCI medido','RSRP dBm','SINR dB','DL Mbps'],tests.map(b=>`<tr>${td(b.name)}${td(b.plan.pci)}${td(b.test.pci)}${td(b.test.rsrp)}${td(b.test.sinr)}${td(b.test.dl)}</tr>`)):''}`}).join('');
+ const chk=T(['Punto','Resultado','Nota'],[...[['Seguridad',SAFETY.map(([k,l])=>[l,a.safety[k],''])],...CHECK.map(([g,it])=>[g,it.map(([k,l])=>[l,a.check[k]?.s,a.check[k]?.note])])].flatMap(([g,it])=>[`<tr><th colspan="3">${esc(g)}</th></tr>`,...it.map(([l,s,n])=>`<tr>${td(l)}${td({ok:'OK',nok:'NO OK',na:'N/A'}[s],s==='nok'?'bad':'')}${td(n)}</tr>`)])]);
+ const g=a.visit.gps;
+ return`<div class="rep"><h1>Informe de auditoría RF en campo</h1><p class="sub">${esc(S.settings.company)} ${S.settings.company?'·':''} ${esc(a.site.code)} ${esc(a.site.name)} · ${a.status==='cerrada'?'Cerrada '+esc(dt(a.closedAt)):'BORRADOR — auditoría en curso'}</p>
+ ${T(['Dato','Valor'],[['Región / Estado',[a.site.region,a.site.state].filter(Boolean).join(' / ')],['Tipo / altura de estructura',`${a.site.type} ${a.site.height?'· '+a.site.height+' m':''}`],['Coordenadas plan',[a.site.lat,a.site.lon].filter(Boolean).join('  /  ')],['GPS en sitio',g?`${g.lat.toFixed(6)}, ${g.lon.toFixed(6)} (±${Math.round(g.acc)} m)`:''],['Dirección',a.site.address],['Fecha y horario',`${a.visit.date.split('-').reverse().join('/')} ${a.visit.start} – ${a.visit.end}`],['Auditor(es)',a.visit.auditors],['Cuadrilla / contratista',a.visit.crew],['Motivo',a.visit.reason],['Ticket / OT',a.visit.ticket],['Instrumentos',a.visit.instrument],['Clima',a.visit.weather]].map(([k,x])=>`<tr>${td(k)}${td(x)}</tr>`))}
+ <h2>Resumen</h2><p><b>${sum('changes')}</b> parámetro(s) modificados · <b>${sum('ootFound')}</b> fuera de tolerancia al llegar · <b>${sum('ootFinal')}</b> fuera de tolerancia al salir · <b>${a.findings.length}</b> hallazgo(s)</p><p class="small">Tolerancias: azimut ±${esc(fmt(S.settings.tol.az))}°, tilt mecánico ±${esc(fmt(S.settings.tol.mt))}°, tilt eléctrico ±${esc(fmt(S.settings.tol.et))}°, altura ±${esc(fmt(S.settings.tol.h))} m. Azimuts referidos al norte verdadero.</p>
+ ${a.conclusion?`<p><b>Conclusiones:</b> ${esc(a.conclusion)}</p>`:''}
+ <div class="center">${rose(antennas(a).map(x=>({plan:x.n.plan.az,found:x.n.found.az,final:x.n.final.az,label:'S'+(x.si+1)})),300)}</div>
+ <h2>Parámetros por sector</h2>${params}
+ <h2>Hallazgos</h2>${a.findings.length?a.findings.map(f=>`<div class="find"><h3>${esc(fcode(a,f))} · ${esc(f.severity)} · ${esc(f.title)}</h3><p>${esc(where(a,f))} · ${esc(f.category)} · Área: <b>${esc(f.area)}</b> · Estado: <b>${esc(f.status)}</b>${f.ticket?' · Ticket '+esc(f.ticket):''}${f.escalatedAt?' · Escalado '+esc(dt(f.escalatedAt)):''}</p>${f.desc?`<p>${esc(f.desc)}</p>`:''}${f.action?`<p><b>Acción requerida:</b> ${esc(f.action)}</p>`:''}${pics(ph.filter(p=>p.tag==='f:'+f.id))}</div>`).join(''):'<p>Sin hallazgos registrados.</p>'}
+ <h2>Seguridad y checklist</h2>${chk}
+ <h2>Registro fotográfico</h2>${pics(ph.filter(p=>!p.tag.startsWith('f:')))||'<p>Sin fotos.</p>'}
+ ${v.err.length+v.warn.length?`<h2>Observaciones del control de calidad</h2><ul>${[...v.err,...v.warn].map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:''}
+ ${a.closeNote?`<p><b>Justificación de cierre con pendientes:</b> ${esc(a.closeNote)}</p>`:''}
+ <div class="signs"><div>${a.signature?.startsWith('data:image/png;base64,')?`<img src="${esc(a.signature)}" alt="Firma">`:''}<p>Auditor: ${esc(a.visit.auditors)}</p></div><div><p style="margin-top:70px">Recibe: ${esc(a.receivedBy)}</p></div></div></div>`}
+const REPORT_CSS=`.rep{font:13px/1.45 Arial,sans-serif;color:#111;background:#fff;max-width:900px;margin:0 auto;padding:16px}.rep h1{font-size:22px;color:#0b1f33}.rep h2{font-size:16px;margin:20px 0 8px;border-bottom:3px solid #c2490a;padding-bottom:3px}.rep h3{font-size:14px;margin:14px 0 6px}.rep p{margin:5px 0}.rep ul{margin:4px 0 4px 20px}.rep .sub{color:#444}.rep .small{font-size:11px;color:#555}.rep table{width:100%;border-collapse:collapse;margin:6px 0}.rep th,.rep td{border:1px solid #bbb;padding:4px 6px;text-align:left;vertical-align:top;overflow-wrap:anywhere}.rep th{background:#eef1f4}.rep td.bad{background:#fbe1df;font-weight:700}.rep td.chg{background:#fdefd2;font-weight:700}.rep .pics{display:flex;flex-wrap:wrap;gap:8px}.rep figure{width:calc(50% - 4px);margin:0;break-inside:avoid}.rep figure img{width:100%;max-height:300px;object-fit:contain;background:#eee}.rep figcaption{font-size:11px;color:#444}.rep .find{break-inside:avoid-page}.rep .center{text-align:center;break-inside:avoid}.rep .center svg{display:block;margin:8px auto}.rep tr{break-inside:avoid}.rep h2,.rep h3{break-after:avoid}.rep .signs{display:flex;gap:30px;margin-top:30px;break-inside:avoid}.rep .signs>div{flex:1;border-bottom:1px solid #333}.rep .signs img{max-width:220px;max-height:90px}`;
+const reportHTML=async a=>`<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none';style-src 'unsafe-inline';img-src data:"><title>Auditoría ${esc(a.site.code)} ${esc(a.visit.date)}</title><style>*{box-sizing:border-box;margin:0;padding:0}body{background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}${REPORT_CSS}</style></head><body>${await reportBody(a)}</body></html>`;
+
+/* ---------- Paquetes y respaldo ---------- */
+async function photosFor(list){const out=[];for(const a of list)out.push(...(await DB.photos(a.id)).sort((x,y)=>x.takenAt.localeCompare(y.takenAt)));return out}
+async function buildPackage(list,full){const files=[],meta=[],ph=await photosFor(list);
+ for(const a of list)ph.filter(p=>p.auditId===a.id).forEach((p,i)=>{const file=photoName(a,p,i);files.push({name:file,data:p.blob});const{blob,...m}=p;meta.push({...m,file})});
+ const data={app:'auditoria-rf',version:VERSION,exportedAt:now(),audits:list,photos:meta};if(full){data.sites=S.sites;data.settings=S.settings}
+ files.unshift({name:'datos.json',data:JSON.stringify(data)});
+ files.push({name:'parametros.csv',data:toCSV(paramRows(list))},{name:'hallazgos.csv',data:toCSV(findingRows(list.flatMap(a=>a.findings.map(f=>({a,f})))))});
+ if(!full&&list.length===1)files.push({name:'informe.html',data:await reportHTML(list[0])});
+ return zip(files)}
+const okId=v=>typeof v==='string'&&/^[A-Za-z0-9_-]{1,40}$/.test(v);
+/* Los paquetes vienen de otros teléfonos: se validan identificadores y valores de catálogo. */
+function cleanAudit(a){if(!a||!okId(a.id)||!a.site||!a.visit||!Array.isArray(a.sectors)||!Array.isArray(a.findings))return null;
+ const base=newAudit();const o={...base,...a,site:{...base.site,...a.site},visit:{...base.visit,...a.visit},safety:a.safety||{},check:a.check||{}};
+ if(o.visit.gps&&!['lat','lon','acc'].every(k=>Number.isFinite(o.visit.gps[k])))o.visit.gps=null;
+ if(o.sectors.some(s=>!okId(s.id)||!Array.isArray(s.antennas)||s.antennas.some(n=>!okId(n.id)||!n.plan||!n.found||!n.final||!Array.isArray(n.bands)||n.bands.some(b=>!okId(b.id)||!b.plan||!b.found||!b.final||!b.test))))return null;
+ if(o.findings.some(f=>!okId(f.id)||!SEVS[f.severity]||!Number.isInteger(f.num)||!Array.isArray(f.history)))return null;
+ if(typeof o.signature!=='string'||!/^(data:image\/png;base64,[A-Za-z0-9+/=]*)?$/.test(o.signature))o.signature='';
+ return o}
+async function importPackage(file){const files=await unzip(file),j=files.get('datos.json');if(!j)throw new Error('El ZIP no contiene datos de auditoría');
+ const data=JSON.parse(await j.text());if(data.app!=='auditoria-rf')throw new Error('El paquete no es de esta aplicación');
+ let added=0,skipped=0,bad=0;for(const raw of data.audits||[]){const a=cleanAudit(raw);if(!a){bad++;continue}
+  const cur=S.audits.find(x=>x.id===a.id);if(cur&&cur.updatedAt>=a.updatedAt){skipped++;continue}
+  if(cur){for(const p of await DB.photos(a.id))await DB.del('photos',p.id);S.audits.splice(S.audits.indexOf(cur),1)}
+  for(const m of(data.photos||[]).filter(p=>p.auditId===a.id)){const b=files.get(m.file);if(!b||!okId(m.id)||typeof m.tag!=='string'||typeof m.takenAt!=='string')continue;const{file:_,...p}=m;if(p.gps&&!Number.isFinite(p.gps.lat))p.gps=null;await DB.put('photos',{...p,blob:new Blob([b],{type:'image/jpeg'})})}
+  await DB.put('audits',a);S.audits.push(a);added++}
+ for(const s of data.sites||[])if(s?.code&&s.info&&Array.isArray(s.sectors)&&!S.sites.some(x=>x.code===s.code)){await DB.put('sites',s);S.sites.push(s)}
+ S.photos=[];return{added,skipped,bad}}
+
+/* ---------- Interfaz ---------- */
+let route=[],cur=null,toolStop=null,toolHost=null,lastHash='';
+const openSet=new Set;
+function toast(m){const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(t._t);t._t=setTimeout(()=>t.style.display='none',3200)}
+let modalClose=null;
+function openModal(html,onClose){closeModal();$('#modal').innerHTML=`<div class="box" role="dialog" aria-modal="true">${html}</div>`;$('#modal').classList.add('on');modalClose=onClose||null}
+function closeModal(){const f=modalClose;modalClose=null;$('#modal').classList.remove('on');$('#modal').innerHTML='';f?.()}
+function ask(msg,ok='Aceptar'){return new Promise(res=>{let done=false;openModal(`<p style="margin-bottom:14px">${esc(msg)}</p><div class="row"><button class="pri" id="askOk">${esc(ok)}</button><button id="askNo">Cancelar</button></div>`,()=>{if(!done)res(false)});$('#askOk').onclick=()=>{done=true;closeModal();res(true)};$('#askNo').onclick=()=>closeModal()})}
+const go=h=>{if(location.hash===h)render();else location.hash=h};
+
+const F=(label,path,value,attr='')=>`<label>${label}<input data-b="${path}" value="${esc(value)}" ${attr}></label>`;
+const Ta=(label,path,value,attr='data-b')=>`<label>${label}<textarea ${attr}="${path}">${esc(value)}</textarea></label>`;
+const options=(list,v)=>(v&&!list.includes(v)?[v,...list]:list).map(o=>`<option ${o===v?'selected':''}>${esc(o)}</option>`).join('');
+const Sel=(label,path,value,list,attr='data-b')=>`<label>${label}<select ${attr}="${path}">${options(list,value)}</select></label>`;
+const sevTag=f=>`<span class="tag ${SEVS[f.severity].c}">${esc(f.severity)}</span> <span class="tag ${DONE.includes(f.status)?'ok':''}">${esc(f.status)}</span>${overdue(f)?' <span class="tag bad">VENCIDO</span>':''}`;
+const det=(key,title,body)=>`<details data-key="${esc(key)}" ${openSet.has(key)?'open':''} style="margin-top:10px"><summary style="cursor:pointer;font-weight:600;padding:8px 0">${title}</summary>${body}</details>`;
+
+const auditItem=a=>{const open=a.findings.filter(f=>!DONE.includes(f.status)).length,ch=antennas(a).reduce((s,x)=>s+antStats(x.n).changes,0);
+ return`<a class="item" href="#/audit/${a.id}/${a.status==='cerrada'?'cierre':'datos'}"><div class="row sp"><b>${esc(a.site.code||'Sin código')} ${esc(a.site.name)}</b><span class="tag ${a.status==='cerrada'?'ok':'warn'}">${a.status==='cerrada'?'Cerrada':'En curso'}</span></div><div class="mut">${esc(a.visit.date.split('-').reverse().join('/'))} · ${esc(a.visit.auditors||'sin auditor')} · ${ch} cambio(s) · ${open} hallazgo(s) abiertos</div></a>`};
+const sortedAudits=()=>[...S.audits].sort((a,b)=>b.createdAt.localeCompare(a.createdAt));
+
+const V={
+home(){const all=allFindings(),open=all.filter(x=>!DONE.includes(x.f.status)),act=sortedAudits();
+ const stale=S.audits.length&&(!S.settings.lastBackup||Date.now()-new Date(S.settings.lastBackup)>3*864e5);
+ return`${DB.db?'':'<div class="warnbox"><b>Modo de prueba:</b> este navegador no permite guardar datos. Todo se perderá al cerrar. Instale la app desde su dirección web antes de usarla en campo.</div>'}
+ ${stale?'<div class="warnbox">Los datos solo están en este teléfono. <a href="#/settings" style="color:inherit"><b>Haga un respaldo</b></a>.</div>':''}
+ <div class="kpis"><div class="kpi"><b>${S.audits.filter(a=>a.status!=='cerrada').length}</b><small>En curso</small></div><div class="kpi"><b>${S.audits.filter(a=>a.status==='cerrada').length}</b><small>Cerradas</small></div><div class="kpi"><b>${S.audits.reduce((s,a)=>s+antennas(a).reduce((t,x)=>t+antStats(x.n).changes,0),0)}</b><small>Cambios</small></div>
+ <div class="kpi"><b>${open.length}</b><small>Abiertos</small></div><div class="kpi"><b style="color:var(--bad)">${open.filter(x=>x.f.severity==='Crítica').length}</b><small>Críticos</small></div><div class="kpi"><b style="color:var(--bad)">${open.filter(x=>overdue(x.f)).length}</b><small>Vencidos</small></div></div>
+ <a class="btn pri full" href="#/new" style="margin-bottom:12px">＋ Nueva auditoría</a>
+ <div class="card"><h2>Auditorías recientes</h2>${act.slice(0,5).map(auditItem).join('')||'<p class="mut">Aún no hay auditorías. Toque «Nueva auditoría»; puede empezar con el sitio de ejemplo.</p>'}</div>`},
+audits(){const q=S.q.toLowerCase();return`<a class="btn pri full" href="#/new" style="margin-bottom:12px">＋ Nueva auditoría</a><label>Buscar por sitio, región o auditor<input id="q" value="${esc(S.q)}" type="search"></label><div class="card" id="list">${sortedAudits().filter(a=>`${a.site.code} ${a.site.name} ${a.site.region} ${a.visit.auditors}`.toLowerCase().includes(q)).map(auditItem).join('')||'<p class="mut">Sin resultados.</p>'}</div>`},
+new(){return`<div class="card"><h2>Desde la base de sitios</h2>${S.sites.length?`<label>Escriba el código o nombre<input id="pick" type="search" autocomplete="off"></label><div id="picks">${pickList('')}</div>`:'<p class="mut">No hay sitios cargados. Importe su base (CSV) en Ajustes para traer azimuts, tilts y PCI de diseño.</p>'}</div>
+ <div class="card"><h2>Otras opciones</h2><div class="row"><button class="pri" data-act="blank">Sitio en blanco</button><button data-act="demo">Probar con sitio de ejemplo</button></div></div>`},
+findings(){const l=filtered();const chip=(k,v,t)=>`<button class="chip ${S.filter[k]===v?'on':''}" data-act="filter" data-k="${k}" data-v="${esc(v)}">${esc(t)}</button>`;
+ return`<div class="tabs">${chip('st','open','Abiertos')}${chip('st','all','Todos')}${chip('st','late','Vencidos')}${chip('st','pend','Sin escalar')}</div>
+ <div class="g2"><label>Área<select data-flt="area"><option value="">Todas</option>${AREAS.map(a=>`<option ${S.filter.area===a?'selected':''}>${esc(a)}</option>`).join('')}</select></label><label>Severidad<select data-flt="sev"><option value="">Todas</option>${Object.keys(SEVS).map(a=>`<option ${S.filter.sev===a?'selected':''}>${a}</option>`).join('')}</select></label></div>
+ <div class="row" style="margin-bottom:12px"><button data-act="fcsv" ${l.length?'':'disabled'}>Exportar CSV</button><button data-act="fsum" ${l.length?'':'disabled'}>Resumen para enviar</button></div>
+ ${l.map(({a,f})=>`<div class="card"><div>${sevTag(f)}</div><b>${esc(f.title||'(sin título)')}</b><div class="mut">${esc(a.site.code)} · ${esc(where(a,f))} · ${esc(f.area)}${f.due&&!DONE.includes(f.status)?' · vence '+dt(f.due):''}</div><div class="row" style="margin-top:8px"><button class="sm" data-act="openf" data-a="${a.id}" data-f="${f.id}">Abrir</button><button class="sm pri" data-act="esc" data-a="${a.id}" data-f="${f.id}">Escalar</button></div></div>`).join('')||'<div class="card mut">No hay hallazgos con este filtro.</div>'}`},
+tools(){return route[1]?'<div class="card" id="tool"></div>':`<div class="card">${[['compass','🧭 Brújula de azimut','Lectura corregida a norte verdadero'],['incl','📐 Inclinómetro','Tilt mecánico apoyando el teléfono'],['gpsaz','🛰️ Azimut por GPS','Dos puntos, sin interferencia del metal'],['calc','📡 Cobertura y tilt','Distancias del haz y tilt requerido']].map(([k,t,d])=>`<a class="item" href="#/tools/${k}"><b>${t}</b><div class="mut">${d}</div></a>`).join('')}</div><div class="warnbox">Los sensores del teléfono son una referencia. Para el valor oficial use brújula e inclinómetro calibrados, o confirme con un segundo método.</div>`},
+settings(){const s=S.settings;const I=(l,p,v,at='')=>`<label>${l}<input data-s="${p}" value="${esc(v)}" ${at}></label>`;
+ return`<div class="card"><h2>Identificación</h2>${I('Nombre del auditor','auditor',s.auditor)}${I('Empresa / gerencia (aparece en el informe)','company',s.company)}</div>
+ <div class="card"><h2>Criterios técnicos</h2><div class="g2">${I('Tolerancia azimut (±°)','tol.az',s.tol.az,'inputmode="decimal"')}${I('Tolerancia tilt mecánico (±°)','tol.mt',s.tol.mt,'inputmode="decimal"')}${I('Tolerancia tilt eléctrico (±°)','tol.et',s.tol.et,'inputmode="decimal"')}${I('Tolerancia altura (±m)','tol.h',s.tol.h,'inputmode="decimal"')}</div>${I('Declinación magnética (°; oeste = negativo)','declination',s.declination)}<p class="mut">Referencia WMM 2025 para finales de 2026: San Cristóbal −10,3 · Maracaibo −10,8 · Barquisimeto −12,1 · Valencia −12,8 · Pto. Ayacucho −12,9 · Caracas −13,4 · Porlamar −14,7 · Maturín −15,1 · Pto. Ordaz −15,3 · Santa Elena −16,2.</p>
+ <label>Separador decimal en CSV<select data-s="dec"><option value="," ${s.dec===','?'selected':''}>Coma (Excel en español)</option><option value="." ${s.dec==='.'?'selected':''}>Punto</option></select></label><label>Sello en las fotos (sitio, fecha, GPS)<select data-s="stamp"><option value="1" ${s.stamp?'selected':''}>Activado</option><option value="" ${s.stamp?'':'selected'}>Desactivado</option></select></label></div>
+ <div class="card"><h2>Contactos de escalamiento</h2>${AREAS.map(a=>det('c:'+a,esc(a),`<div class="g2">${I('WhatsApp (58412…)',`contacts.${a}.phone`,s.contacts[a]?.phone||'','inputmode="tel"')}${I('Correo',`contacts.${a}.email`,s.contacts[a]?.email||'','type="email"')}</div>`)).join('')}</div>
+ <div class="card"><h2>Base de sitios</h2><p class="mut" style="margin-bottom:8px">${S.sites.length} sitio(s) cargado(s). Una fila por banda de cada antena.</p><div class="row"><label class="btn pri filebtn" style="margin:0">Importar CSV<input type="file" accept=".csv,.txt,text/csv" data-import="csv"></label><button data-act="template">Descargar plantilla</button>${S.sites.length?'<button class="dan" data-act="delsites">Borrar base</button>':''}</div></div>
+ <div class="card"><h2>Respaldo y consolidación</h2><p class="mut" style="margin-bottom:8px">Último respaldo: ${dt(s.lastBackup)}. «Importar» admite respaldos y paquetes ZIP de otras cuadrillas; si una auditoría ya existe, se conserva la versión más reciente.</p><div class="row"><button class="pri" data-act="backup">Respaldar todo (ZIP)</button><label class="btn filebtn" style="margin:0">Importar ZIP<input type="file" accept=".zip,application/zip" data-import="zip"></label></div></div>
+ <p class="mut">Auditoría RF Campo v${VERSION}</p>`},
+audit(){const a=cur,tab=route[2]||'datos',open=a.findings.filter(f=>!DONE.includes(f.status)).length;
+ return`<div class="tabs">${[['datos','Datos'],['seguridad','Seguridad'],['sectores','Sectores'],['checklist','Checklist'],['hallazgos',`Hallazgos${open?' ('+open+')':''}`],['fotos','Fotos'],['cierre','Cierre']].map(([k,t])=>`<a href="#/audit/${a.id}/${k}" class="${k===tab?'on':''}">${t}</a>`).join('')}</div>
+ ${a.status==='cerrada'&&!['cierre','hallazgos'].includes(tab)?'<div class="warnbox">Auditoría cerrada: solo lectura. Puede reabrirla en «Cierre».</div>':''}
+ <div ${a.status==='cerrada'&&!['cierre','hallazgos'].includes(tab)?'data-lock':''}>${(T[tab]||T.datos)(a)}</div>`}
+};
+function pickList(q){q=q.toLowerCase();return S.sites.filter(s=>`${s.code} ${s.info.name} ${s.info.region}`.toLowerCase().includes(q)).slice(0,15).map(s=>`<button class="full" style="margin-bottom:6px;justify-content:flex-start" data-act="fromsite" data-code="${esc(s.code)}">${esc(s.code)} · ${esc(s.info.name)}</button>`).join('')||'<p class="mut">Sin coincidencias.</p>'}
+const filtered=()=>{const F_=S.filter,rank=Object.keys(SEVS);return allFindings().filter(({f})=>(!F_.area||f.area===F_.area)&&(!F_.sev||f.severity===F_.sev)&&(F_.st==='all'||(F_.st==='late'?overdue(f):F_.st==='pend'?f.status==='Abierto':!DONE.includes(f.status)))).sort((x,y)=>rank.indexOf(x.f.severity)-rank.indexOf(y.f.severity)||x.f.createdAt.localeCompare(y.f.createdAt))};
+
+function slotHTML(a,tag,label,req){const list=S.photos.filter(p=>p.tag===tag),lock=a.status==='cerrada'&&!tag.startsWith('f:');
+ return`<div class="slot"><span>${esc(label)}${req?' <b style="color:var(--acc)" title="Requerida">*</b>':''} ${list.length?`<span class="tag ok">${list.length}</span>`:''}</span>${lock?'':`<span class="row"><label class="btn sm filebtn" style="margin:0">📷 Cámara<input type="file" accept="image/*" capture="environment" data-photo="${esc(tag)}"></label><label class="btn sm filebtn" style="margin:0">Galería<input type="file" accept="image/*" multiple data-photo="${esc(tag)}"></label></span>`}${list.length?`<div class="photos">${list.map(p=>`<div class="ph"><img src="${url(p)}" alt="${esc(label)}" data-act="view" data-p="${p.id}"></div>`).join('')}</div>`:''}</div>`}
+
+function derived(a,si,n){const t=antStats(n);let h=`<span class="tag ${t.changes?'warn':''}">${t.changes} cambio(s)</span>${t.ootFound?`<span class="tag bad">${t.ootFound} fuera de tolerancia al llegar</span>`:''}${t.ootFinal?`<span class="tag bad">${t.ootFinal} quedan fuera de tolerancia</span>`:!t.missFinal?'<span class="tag ok">Final dentro de tolerancia o sin plan</span>':''}`;
+ for(const k of['az','mt','h']){const d=delta(k,n.final[k],n.found[k]);if(d)h+=`<span class="tag warn">Δ ${{az:'azimut',mt:'tilt mec.',h:'altura'}[k]} ${d>0?'+':''}${fmt(d)}${k==='h'?' m':'°'}</span>`}
+ for(const b of n.bands){const f=z=>{const m=num(n[z].mt),e=num(b[z].et),ht=num(n[z].h)??num(n.plan.h);return m===null||e===null?null:{t:m+e,p:footprint(ht,m+e,num(n.vbw))}};const x=f('found'),y=f('final'),line=(l,o)=>o?`<br>${l}: tilt total <b>${fmt(o.t)}°</b>${o.p?` · haz a <b>${dist(o.p.main)}</b> (de ${dist(o.p.near)} a ${dist(o.p.far)})`:''}`:'';
+  if(x||y)h+=`<div style="margin-top:6px"><b>${esc(b.name)}</b>${line('Antes',x)}${line('Final',y)}</div>`;
+  const c=pciCheck(a,si,b);if(c)h+=`<div style="margin-top:4px"><span class="tag ${c.ok?'ok':'bad'}">${esc(c.msg)}</span></div>`}
+ return h}
+
+const T={
+datos(a){const g=a.visit.gps,la=num(a.site.lat),lo=num(a.site.lon),hist=sortedAudits().filter(x=>x.id!==a.id&&a.site.code&&x.site.code===a.site.code);
+ return`<div class="card"><h2>Sitio</h2><div class="g2">${F('Código del sitio *','site.code',a.site.code,'autocapitalize="characters"')}${F('Nombre','site.name',a.site.name)}${F('Región','site.region',a.site.region)}${F('Estado','site.state',a.site.state)}${Sel('Tipo','site.type',a.site.type,['Torre autosoportada','Torre ventada','Monopolo','Azotea','Mástil / poste','Camuflado','Indoor'])}${F('Altura estructura (m)','site.height',a.site.height,'inputmode="decimal"')}${F('Latitud plan','site.lat',a.site.lat)}${F('Longitud plan','site.lon',a.site.lon)}</div>${F('Dirección / referencia de acceso','site.address',a.site.address)}</div>
+ <div class="card"><h2>Posición en sitio</h2>${g?`<p><b>${g.lat.toFixed(6)}, ${g.lon.toFixed(6)}</b> (±${Math.round(g.acc)} m)</p><p class="mut">${dt(g.at)}${la!==null&&lo!==null?` · a ${dist(haversine({lat:la,lon:lo},g))} del plan`:''}</p>`:'<p class="mut">Sin capturar.</p>'}<div class="row" style="margin-top:8px"><button class="pri" data-act="gps">📍 Capturar GPS</button>${g?`<a class="btn" target="_blank" rel="noopener" href="https://maps.google.com/?q=${g.lat},${g.lon}">Ver mapa</a>`:''}</div></div>
+ <div class="card"><h2>Visita</h2><div class="g2">${F('Fecha','visit.date',a.visit.date,'type="date"')}${Sel('Motivo','visit.reason',a.visit.reason,VISIT_REASONS)}${F('Hora inicio','visit.start',a.visit.start,'type="time"')}${F('Hora fin','visit.end',a.visit.end,'type="time"')}</div>${F('Auditor(es) *','visit.auditors',a.visit.auditors)}<div class="g2">${F('Cuadrilla / contratista','visit.crew',a.visit.crew)}${F('Ticket / OT','visit.ticket',a.visit.ticket)}</div>${F('Instrumentos usados (brújula, inclinómetro, serial)','visit.instrument',a.visit.instrument)}${F('Clima','visit.weather',a.visit.weather)}</div>
+ ${hist.length?`<div class="card"><h2>Historial de este sitio</h2>${hist.map(auditItem).join('')}</div>`:''}
+ <button class="dan full" data-act="delaudit">Eliminar auditoría</button>`},
+seguridad(a){return`<div class="warnbox">Antes de subir: complete estos puntos. Si alguno está en «No», detenga el trabajo y repórtelo.</div><div class="card">${SAFETY.map(([k,l])=>chkRow('safety',k,l,a.safety[k])).join('')}</div>`},
+sectores(a){return`<div class="card"><h2>Vista del sitio</h2><div id="siterose">${siteRose(a)}</div></div>
+ <datalist id="bands">${BANDS.map(b=>`<option value="${b}">`).join('')}</datalist>
+ ${a.sectors.map((s,si)=>`<div class="card"><div class="row" style="flex-wrap:nowrap;align-items:flex-end"><div style="flex:1">${F('Sector',`sectors.${si}.name`,s.name)}</div><button class="dan sm" data-act="delsector" data-i="${si}" style="margin-bottom:8px">Quitar</button></div>
+ ${s.antennas.map((n,ai)=>antCard(a,s,si,n,ai)).join('')}<button class="full" data-act="addant" data-i="${si}" style="margin-top:10px">＋ Antena en este sector</button></div>`).join('')}
+ <button class="full" data-act="addsector">＋ Agregar sector</button>`},
+checklist(a){return CHECK.map(([g,items])=>`<div class="card"><h2>${g}</h2>${items.map(([k,l,cat])=>{const c=a.check[k]||{},f=a.findings.find(x=>x.itemKey===k);return chkRow('check',k,l,c.s,c.s==='nok'?`<input data-b="check.${k}.note" value="${esc(c.note||'')}" placeholder="Describa lo observado"><div class="row" style="margin-top:6px">${f?`<button class="sm" data-act="openf" data-a="${a.id}" data-f="${f.id}" data-free>Ver hallazgo ${pad(f.num)}</button>`:`<button class="sm pri" data-act="chkfind" data-k="${k}">Crear hallazgo</button>`}</div>`:'')}).join('')}</div>`).join('')},
+hallazgos(a){const opts=[['','Sitio (general)'],...antennas(a).map(x=>[x.n.id,`${x.s.name} · ${x.n.name}`])];
+ return`<button class="pri full" data-act="addfind" style="margin-bottom:12px">＋ Registrar hallazgo</button>
+ ${[...a.findings].reverse().map(f=>{const i=a.findings.indexOf(f),p=`findings.${i}`;return`<div class="card" id="f-${f.id}"><div class="mut">${esc(fcode(a,f))}</div><div>${sevTag(f)}</div><b>${esc(f.title||'(sin título)')}</b><div class="mut">${esc(f.area)} · ${esc(where(a,f))}</div>
+ <div class="row" style="margin-top:8px"><button class="pri sm" data-act="esc" data-a="${a.id}" data-f="${f.id}">Escalar a ${esc(f.area)}</button></div>
+ ${det('f:'+f.id,'Detalle, fotos y seguimiento',`${F('Título *',p+'.title',f.title)}<div class="g2">${Sel('Categoría',p+'.category',f.category,Object.keys(CATS))}${Sel('Severidad',p+'.severity',f.severity,Object.keys(SEVS))}${Sel('Área responsable',p+'.area',f.area,AREAS)}${Sel('Estado',p+'.status',f.status,STATES)}</div><p class="mut" style="margin-bottom:8px">${esc(f.severity)}: ${SEVS[f.severity].d} · plazo sugerido ${SEVS[f.severity].h} h</p>
+ <label>Ubicación<select data-b="${p}.antennaId">${opts.map(([v,t])=>`<option value="${v}" ${v===f.antennaId?'selected':''}>${esc(t)}</option>`).join('')}</select></label>${Ta('Descripción',p+'.desc',f.desc)}${Ta('Acción requerida',p+'.action',f.action)}${F('Ticket / referencia del área',p+'.ticket',f.ticket)}
+ ${slotHTML(a,'f:'+f.id,'Evidencia fotográfica',false)}<h3>Historial</h3>${f.history.map(h=>`<div class="mut">${dt(h.at)} — ${esc(h.text)}</div>`).join('')}<div class="row" style="margin-top:8px;flex-wrap:nowrap"><input id="note-${f.id}" placeholder="Nota de seguimiento"><button class="sm" data-act="note" data-f="${f.id}">Anotar</button></div>${a.status==='cerrada'?'':`<button class="dan sm" data-act="delfind" data-f="${f.id}" style="margin-top:10px">Eliminar hallazgo</button>`}`)}</div>`}).join('')||'<div class="card mut">Sin hallazgos. Regístrelos aquí, desde una antena o desde un punto «No OK» del checklist.</div>'}`},
+fotos(a){const req=[...SITE_SLOTS.filter(s=>s[2]).map(s=>s[0]),...antennas(a).flatMap(x=>ANT_SLOTS.filter(s=>s[2]).map(s=>`${x.n.id}:${s[0]}`))],have=req.filter(t=>S.photos.some(p=>p.tag===t)).length;
+ return`<div class="card"><b>${have} de ${req.length}</b> fotos requeridas (*) · ${S.photos.length} en total</div><div class="card"><h2>Sitio</h2>${SITE_SLOTS.map(([k,l,r])=>slotHTML(a,k,l,r)).join('')}</div>
+ ${antennas(a).map(x=>`<div class="card"><h2>${esc(x.s.name)} · ${esc(x.n.name)}</h2>${ANT_SLOTS.map(([k,l,r])=>slotHTML(a,`${x.n.id}:${k}`,l,r)).join('')}</div>`).join('')}`},
+cierre(a){const v=validate(a),closed=a.status==='cerrada';
+ return`<div class="card"><h2>Control de calidad</h2>${v.err.length?`<p><span class="tag bad">${v.err.length} pendiente(s) obligatorio(s)</span></p><ul style="margin:6px 0 10px 20px">${v.err.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:'<p><span class="tag ok">Sin pendientes obligatorios</span></p>'}${v.warn.length?det('warns',`${v.warn.length} advertencia(s)`,`<ul style="margin-left:20px">${v.warn.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`):''}</div>
+ <div class="card" ${closed?'data-lock':''}><h2>Conclusiones y firma</h2>${Ta('Conclusiones y recomendaciones','conclusion',a.conclusion)}${F('Recibe / revisa (nombre)','receivedBy',a.receivedBy)}<label>Firma del auditor</label>${a.signature?`<img src="${esc(a.signature)}" alt="Firma" style="max-width:100%;background:#fff;border-radius:8px">${closed?'':'<button class="sm" data-act="clearsign">Borrar firma</button>'}`:closed?'<p class="mut">Sin firma.</p>':'<canvas class="sign" id="sign" width="600" height="250"></canvas>'}</div>
+ <div class="card"><h2>Informe y exportación</h2><div class="row"><button class="pri" data-act="print">Imprimir / guardar PDF</button><button data-act="rhtml">Compartir informe</button><button data-act="rzip">Paquete ZIP con fotos</button><button data-act="pcsv">CSV de parámetros</button><button data-act="hcsv">CSV de hallazgos</button><button data-act="summary">Resumen para WhatsApp</button></div></div>
+ ${closed?`<button class="full" data-act="reopen">Reabrir auditoría</button>`:`${v.err.length?'<label>Para cerrar con pendientes, justifique<textarea data-b="closeNote">'+esc(a.closeNote)+'</textarea></label>':''}<button class="pri full" data-act="close">Cerrar auditoría</button>`}`}
+};
+function chkRow(kind,k,l,v,extra=''){return`<div class="chk"><div class="row"><span>${l}</span><div class="seg" role="group" aria-label="${l}">${[['ok','OK'],['nok','No'],['na','N/A']].map(([s,t])=>`<button class="${v===s?'on '+s:''}" aria-pressed="${v===s}" data-act="chk" data-kind="${kind}" data-k="${k}" data-v="${s}">${t}</button>`).join('')}</div></div>${extra?`<div style="margin-top:6px">${extra}</div>`:''}</div>`}
+const siteRose=a=>rose(antennas(a).map(x=>({plan:x.n.plan.az,found:x.n.found.az,final:x.n.final.az,label:'S'+(x.si+1)})),260);
+function antCard(a,s,si,n,ai){const p=`sectors.${si}.antennas.${ai}`;
+ const cell=(path,v,k,role,label)=>`<td><input data-b="${path}" value="${esc(v)}" inputmode="${k==='az'||k==='h'?'decimal':'text'}" data-k="${k}" data-role="${role}" aria-label="${label}"></td>`;
+ const row=(label,k,base,obj,extra='',aria=label)=>`<tr data-row="${base}" data-k="${k}"><td>${label}${extra}</td>${['plan','found','final'].map(r=>cell(`${base}.${r}.${k}`,obj[r][k],k,r,esc(`${aria} ${{plan:'plan',found:'encontrado',final:'final'}[r]}`))).join('')}</tr>`;
+ return`<div data-ant="${p}" style="border-top:2px solid var(--line);padding-top:10px;margin-top:6px">
+ <div class="g2">${F('Antena',p+'.name',n.name)}${F('Modelo',p+'.model',n.model)}${F('Serial',p+'.serial',n.serial)}${F('Apertura vertical (°)',p+'.vbw',n.vbw,'inputmode="decimal"')}</div>
+ <table class="par"><thead><tr><th></th><th>Plan</th><th>Encontrado</th><th>Final</th></tr></thead><tbody>
+ ${row('Azimut °','az',p,n)}${row('Tilt mec. °','mt',p,n)}${row('Altura m','h',p,n)}
+ ${n.bands.map((b,bi)=>row('Tilt eléc. °','et',`${p}.bands.${bi}`,b,`<br><span class="mut">${esc(b.name)}</span>`,`Tilt eléctrico ${b.name}`)).join('')}</tbody></table>
+ <div class="row" style="margin-top:8px"><button class="sm pri" data-act="same" data-i="${si}" data-j="${ai}">Final = Encontrado</button><button class="sm" data-act="measure" data-tool="compass" data-i="${si}" data-j="${ai}">🧭 Medir azimut</button><button class="sm" data-act="measure" data-tool="incl" data-i="${si}" data-j="${ai}">📐 Medir tilt</button><button class="sm" data-act="measure" data-tool="gpsaz" data-i="${si}" data-j="${ai}">🛰️ Azimut GPS</button></div>
+ <div class="derived" data-derived="${n.id}">${derived(a,si,n)}</div>
+ ${det('chg:'+n.id,'Justificación del cambio',`<label>Motivo<select data-b="${p}.reason"><option value="">Seleccione…</option>${options(REASONS,n.reason)}</select></label>${F('Autorizado por',p+'.authBy',n.authBy)}${Ta('Observaciones',p+'.notes',n.notes)}`)}
+ ${det('bd:'+n.id,'Bandas y puertos RET',`${n.bands.map((b,bi)=>`<div class="row" style="flex-wrap:nowrap;align-items:flex-end"><div style="flex:1">${F('Banda',`${p}.bands.${bi}.name`,b.name,'list="bands"')}</div><button class="sm dan" data-act="delband" data-i="${si}" data-j="${ai}" data-n="${bi}" style="margin-bottom:8px">Quitar</button></div>`).join('')}<button class="sm" data-act="addband" data-i="${si}" data-j="${ai}">＋ Banda</button>`)}
+ ${det('t:'+n.id,'Pruebas RF y verificación de PCI',n.bands.map((b,bi)=>{const q=`${p}.bands.${bi}`;return`<h3>${esc(b.name)}</h3><div class="g3">${F('PCI/PSC plan',q+'.plan.pci',b.plan.pci,'inputmode="numeric"')}${F('PCI medido',q+'.test.pci',b.test.pci,'inputmode="numeric"')}${F('RSRP dBm',q+'.test.rsrp',b.test.rsrp)}${F('SINR dB',q+'.test.sinr',b.test.sinr)}${F('Bajada Mbps',q+'.test.dl',b.test.dl,'inputmode="decimal"')}</div>`}).join(''))}
+ <div class="row" style="margin-top:8px"><button class="sm" data-act="antfind" data-i="${si}" data-j="${ai}">＋ Hallazgo en esta antena</button><a class="btn sm" href="#/audit/${a.id}/fotos">📷 Fotos</a><button class="sm dan" data-act="delant" data-i="${si}" data-j="${ai}">Quitar antena</button></div></div>`}
+function paint(){if(!cur)return;for(const box of $$('[data-ant]')){const[,si,,ai]=box.dataset.ant.split('.'),n=cur.sectors[si]?.antennas[ai];if(!n)continue;
+ for(const tr of $$('tr[data-row]',box)){const k=tr.dataset.k,o=getPath(cur,tr.dataset.row),f=$('[data-role=found]',tr),z=$('[data-role=final]',tr);f.classList.toggle('oot',outTol(k,o.found[k],o.plan[k]));z.classList.toggle('oot',outTol(k,o.final[k],o.plan[k]));z.classList.toggle('chg',changed(k,o.found[k],o.final[k]))}
+ $(`[data-derived="${n.id}"]`,box).innerHTML=derived(cur,+si,n)}}
+function stampChange(n){if(antChanged(n)){if(!n.changedAt){n.changedAt=now();openSet.add('chg:'+n.id);const d=$(`details[data-key="chg:${n.id}"]`);if(d)d.open=true}}else n.changedAt=''}
+
+function drawSign(){const c=$('#sign');if(!c)return;const x=c.getContext('2d');x.lineWidth=3;x.lineCap='round';x.strokeStyle='#0b1f33';let down=false,moved=false;
+ const pt=e=>{const r=c.getBoundingClientRect();return[(e.clientX-r.left)*c.width/r.width,(e.clientY-r.top)*c.height/r.height]};
+ c.onpointerdown=e=>{down=true;c.setPointerCapture(e.pointerId);x.beginPath();x.moveTo(...pt(e))};c.onpointermove=e=>{if(!down)return;moved=true;x.lineTo(...pt(e));x.stroke()};
+ c.onpointerup=c.onpointercancel=()=>{if(down&&moved){cur.signature=c.toDataURL('image/png');touch(cur)}down=false}}
+
+/* ---------- Sensores y herramientas ---------- */
+function getGPS(ms=10000){return new Promise((res,rej)=>{if(!navigator.geolocation)return rej(new Error('Este dispositivo no ofrece GPS'));let best=null;
+ const end=()=>{clearTimeout(t);navigator.geolocation.clearWatch(w);best?res(best):rej(new Error('Sin posición. Active el GPS, salga a cielo abierto y reintente.'))};
+ const w=navigator.geolocation.watchPosition(p=>{const c=p.coords;if(!best||c.accuracy<best.acc)best={lat:c.latitude,lon:c.longitude,acc:c.accuracy,at:now()};if(best.acc<=8)end()},e=>{if(e.code===1){best=null;clearTimeout(t);navigator.geolocation.clearWatch(w);rej(new Error('Permiso de ubicación denegado'))}},{enableHighAccuracy:true,maximumAge:0,timeout:ms});
+ const t=setTimeout(end,ms)})}
+const RAD=Math.PI/180;
+/* Rumbo magnético: borde superior si el teléfono está horizontal; cámara trasera si está vertical. */
+function headingFrom(al,be,ga){const a=al*RAD,b=be*RAD,g=ga*RAD;let e,n;
+ if(Math.abs(Math.cos(b)*Math.cos(g))>.7){e=-Math.cos(b)*Math.sin(a);n=Math.cos(a)*Math.cos(b)}else{e=-(Math.cos(a)*Math.sin(g)+Math.sin(a)*Math.sin(b)*Math.cos(g));n=-(Math.sin(a)*Math.sin(g)-Math.cos(a)*Math.sin(b)*Math.cos(g))}
+ return(Math.atan2(e,n)/RAD+360)%360}
+/* Inclinación respecto a la vertical con la espalda del teléfono apoyada en la cara posterior de la antena (+ = downtilt). */
+const tiltFrom=(be,ga)=>Math.asin(Math.max(-1,Math.min(1,Math.cos(be*RAD)*Math.cos(ga*RAD))))/RAD;
+function circStats(v){const s=v.reduce((p,a)=>p+Math.sin(a*RAD),0)/v.length,c=v.reduce((p,a)=>p+Math.cos(a*RAD),0)/v.length;return{mean:(Math.atan2(s,c)/RAD+360)%360,sd:Math.sqrt(Math.max(0,-2*Math.log(Math.min(1,Math.hypot(s,c)))))/RAD}}
+function saveButtons(target){return target?'<div class="row" style="margin-top:10px"><button class="pri" data-save="found" disabled>Guardar en Encontrado</button><button data-save="final" disabled>Guardar en Final</button></div>':''}
+function bindSave(el,target,key,get){$$('[data-save]',el).forEach(b=>b.onclick=()=>{const v=get();if(v===null)return;const a=target.a,n=a.sectors[target.i].antennas[target.j];n[b.dataset.save][key]=String(v).replace('.',S.settings.dec);stampChange(n);touch(a);closeModal();render();toast('Valor guardado')})}
+function sensorTool(el,target,isCompass){let samples=[],value=null,got=false,stop=()=>{};
+ el.innerHTML=`<h2>${isCompass?'Brújula de azimut':'Inclinómetro'}</h2><p class="mut">${isCompass?'Aléjese del metal. Teléfono horizontal: el borde superior apunta como la antena. Vertical: la cámara trasera mira en la dirección de la antena (en iPhone use solo horizontal).':'Apoye la espalda del teléfono, en vertical, contra la cara posterior de la antena. Positivo = inclinada hacia abajo.'}</p><div class="dial" data-v>—</div><p class="mut" data-s style="text-align:center">Esperando sensor…</p><div class="row" style="justify-content:center;margin-top:8px"><button class="pri" data-start>Activar sensor</button><button data-hold disabled>Fijar lectura</button>${isCompass?'':'<button data-zero disabled>Calibrar cero</button><button data-unzero>Quitar calibración</button>'}</div>${saveButtons(target)}`;
+ const q=s=>$(s,el);let held=false,raw=0;
+ const on=e=>{if(held)return;let v=null;if(isCompass){if(typeof e.webkitCompassHeading==='number')v=e.webkitCompassHeading;else if((e.absolute||e.type==='deviceorientationabsolute')&&e.alpha!==null)v=headingFrom(e.alpha,e.beta,e.gamma)}else if(e.beta!==null&&e.gamma!==null)v=tiltFrom(e.beta,e.gamma);
+  if(v===null)return;got=true;raw=v;samples.push(v);if(samples.length>40)samples.shift();let sd;
+  if(isCompass){const c=circStats(samples);value=Math.round((c.mean+num(S.settings.declination??0)+360)%360)%360;sd=c.sd;q('[data-v]').textContent=value+'°';q('[data-s]').textContent=`Magnético ${Math.round(c.mean)}° · declinación ${fmt(num(S.settings.declination))}° · ${sd<3?'estable':'inestable ±'+Math.round(sd)+'°'}`}
+  else{const m=samples.reduce((a,b)=>a+b,0)/samples.length;value=r1(m-S.settings.tiltZero);sd=Math.sqrt(samples.reduce((a,b)=>a+(b-m)**2,0)/samples.length);q('[data-v]').textContent=fmt(value)+'°';q('[data-s]').textContent=`${sd<.4?'Estable':'Mantenga firme el teléfono'}${S.settings.tiltZero?` · calibración ${fmt(-S.settings.tiltZero)}°`:''}`}
+  q('[data-hold]').disabled=false;if(!isCompass)q('[data-zero]').disabled=false;$$('[data-save]',el).forEach(b=>b.disabled=false)};
+ q('[data-start]').onclick=async()=>{try{if(typeof DeviceOrientationEvent==='undefined')throw new Error('Sin sensores de orientación');if(typeof DeviceOrientationEvent.requestPermission==='function'&&await DeviceOrientationEvent.requestPermission(isCompass)==='denied')throw new Error('Permiso de sensores denegado');
+  stop();addEventListener('deviceorientation',on);addEventListener('deviceorientationabsolute',on);stop=()=>{removeEventListener('deviceorientation',on);removeEventListener('deviceorientationabsolute',on)};q('[data-start]').disabled=true;setTimeout(()=>{if(!got&&q('[data-s]'))q('[data-s]').textContent='No llega señal del sensor. Este dispositivo o navegador no la ofrece.'},2500)}catch(e){q('[data-s]').textContent=e.message}};
+ q('[data-hold]').onclick=()=>{held=!held;if(!held)samples=[];q('[data-hold]').textContent=held?'Medir de nuevo':'Fijar lectura'};
+ if(!isCompass){q('[data-zero]').onclick=()=>{S.settings.tiltZero=r1(samples.reduce((a,b)=>a+b,0)/samples.length);saveSettings();held=false;toast('Cero calibrado sobre esta superficie')};q('[data-unzero]').onclick=()=>{S.settings.tiltZero=0;saveSettings();toast('Calibración eliminada')}}
+ bindSave(el,target,isCompass?'az':'mt',()=>value);return()=>stop()}
+function gpsTool(el,target){let A=null,B=null,value=null;
+ if(target){const la=num(target.a.site.lat),lo=num(target.a.site.lon),g=target.a.visit.gps;if(la!==null&&lo!==null)A={lat:la,lon:lo,acc:5,label:'coordenadas del plan'}}
+ el.innerHTML=`<h2>Azimut por GPS</h2><p class="mut">A = pie de la antena. B = párese lejos (ideal más de 100 m) justo en la línea hacia donde apunta la antena. Resultado referido al norte verdadero.</p><div class="row" style="margin:10px 0"><button data-pt="A">Capturar A (torre)</button><button data-pt="B" class="pri">Capturar B (en la línea)</button></div><p class="mut" data-s></p><div class="dial" data-v>—</div>${saveButtons(target)}`;
+ const upd=()=>{const t=p=>p?`${p.lat.toFixed(6)}, ${p.lon.toFixed(6)} (${p.label||'±'+Math.round(p.acc)+' m'})`:'pendiente';let s=`A: ${t(A)} · B: ${t(B)}`;value=null;
+  if(A&&B){const d=haversine(A,B),err=Math.atan((A.acc+B.acc)/Math.max(d,1))/RAD;value=Math.round(bearing(A,B))%360;s+=` · distancia ${dist(d)} · incertidumbre aprox. ±${Math.round(err)}°${err>S.settings.tol.az?' — aléjese más':''}`;$('[data-v]',el).textContent=value+'°'}
+  $('[data-s]',el).textContent=s;$$('[data-save]',el).forEach(b=>b.disabled=value===null)};
+ $$('[data-pt]',el).forEach(b=>b.onclick=async()=>{b.disabled=true;toast('Buscando posición…');try{const p=await getGPS();if(b.dataset.pt==='A')A=p;else B=p;upd()}catch(e){toast(e.message)}b.disabled=false});
+ bindSave(el,target,'az',()=>value);upd();return()=>{}}
+function calcTool(el){el.innerHTML=`<h2>Cobertura y tilt</h2><div class="g2">${[['h','Altura antena (m)','30'],['m','Tilt mecánico (°)','2'],['e','Tilt eléctrico (°)','4'],['v','Apertura vertical (°)','6,5'],['d','Distancia objetivo (m)','500'],['hu','Desnivel a favor (m)','0']].map(([k,l,v])=>`<label>${l}<input id="c_${k}" value="${v}"></label>`).join('')}</div><div id="cres"></div><p class="mut">Modelo geométrico en terreno plano. «Desnivel a favor» suma metros si la zona objetivo está más baja que la base. No sustituye la predicción de la herramienta de planificación.</p>`;
+ const upd=()=>{const g=k=>num($('#c_'+k,el).value),h=(g('h')??0)+(g('hu')??0),m=g('m')??0,e=g('e')??0,f=footprint(h,m+e,g('v')),d=g('d');let r=f?`<p>Tilt total <b>${fmt(m+e)}°</b></p><p>Borde cercano <b>${dist(f.near)}</b> · haz principal <b>${dist(f.main)}</b> · borde lejano <b>${dist(f.far)}</b></p>`:'<p>Revise la altura.</p>';
+  if(d>0&&h>0){const t=Math.atan(h/d)/RAD;r+=`<p style="margin:6px 0">Para apuntar el haz a ${dist(d)}: tilt total <b>${fmt(t)}°</b> → eléctrico <b>${fmt(t-m)}°</b> con el mecánico actual.</p>`}$('#cres',el).innerHTML=r};
+ el.oninput=upd;upd();return()=>{}}
+const TOOLS={compass:(el,t)=>sensorTool(el,t,true),incl:(el,t)=>sensorTool(el,t,false),gpsaz:gpsTool,calc:calcTool};
+function stopTool(){toolStop?.();toolStop=null}
+
+/* ---------- Escalamiento ---------- */
+function escalate(a,f){const msg=findingText(a,f),c=S.settings.contacts[f.area]||{},phone=String(c.phone||'').replace(/\D/g,''),sub=`[${f.severity}] ${a.site.code} - ${f.title}`,n=S.photos.filter(p=>p.tag==='f:'+f.id).length;
+ openModal(`<h2 style="margin-bottom:8px">Escalar a ${esc(f.area)}</h2>${f.title.trim()?'':'<div class="warnbox">Este hallazgo no tiene título.</div>'}<pre class="msg">${esc(msg)}</pre><div class="row"><a class="btn pri" target="_blank" rel="noopener" href="https://wa.me/${phone}?text=${encodeURIComponent(msg)}">WhatsApp</a><a class="btn" href="mailto:${encodeURIComponent(c.email||'')}?subject=${encodeURIComponent(sub)}&body=${encodeURIComponent(msg)}">Correo</a><button id="shph">Compartir con fotos (${n})</button><button id="cpy">Copiar texto</button></div><p class="mut" style="margin:10px 0">${phone||c.email?'':'Puede guardar el contacto de cada área en Ajustes. '}Después de enviarlo, confirme para iniciar el plazo.</p><div class="row"><button class="pri" id="mark">✔ Marcar como escalado</button><button data-act="x">Cerrar</button></div>`);
+ $('#cpy').onclick=async()=>{try{await navigator.clipboard.writeText(msg);toast('Texto copiado')}catch(e){toast('No se pudo copiar; mantenga pulsado el texto')}};
+ $('#shph').onclick=async()=>{const files=(await DB.photos(a.id)).filter(p=>p.tag==='f:'+f.id).map((p,i)=>new File([p.blob],`${slug(fcode(a,f))}_${i+1}.jpg`,{type:'image/jpeg'}));const data=files.length?{files,text:msg}:{text:msg};
+  if(navigator.share&&(!navigator.canShare||navigator.canShare(data))){try{await navigator.share(data)}catch(e){}}else{for(const x of files)download(x.name,x);toast(files.length?'Fotos descargadas; adjúntelas al mensaje':'Use WhatsApp, correo o copiar')}};
+ $('#mark').onclick=()=>{f.escalatedAt=now();f.due=new Date(Date.now()+SEVS[f.severity].h*36e5).toISOString();if(f.status==='Abierto')f.status='Escalado';f.history.push({at:now(),text:`Escalado a ${f.area}`});touch(a);closeModal();render();toast('Hallazgo escalado')}}
+function summary(a){const ch=antennas(a).flatMap(({s,n})=>{const l=[];for(const[k,t]of[['az','Azimut'],['mt','Tilt mec.'],['h','Altura']])if(changed(k,n.found[k],n.final[k]))l.push(`${t} ${n.found[k]} → ${n.final[k]}`);for(const b of n.bands)if(changed('et',b.found.et,b.final.et))l.push(`Tilt eléc. ${b.name} ${b.found.et} → ${b.final.et}`);return l.length?[`• ${s.name} ${n.name}: ${l.join('; ')}`]:[]});
+ return[`*AUDITORÍA RF — ${a.site.code} ${a.site.name}*`,`Fecha: ${a.visit.date.split('-').reverse().join('/')} · ${a.status==='cerrada'?'Cerrada':'En curso'}`,`Auditor: ${a.visit.auditors}`,'','*Cambios realizados*',...(ch.length?ch:['Sin cambios']),'','*Hallazgos*',...(a.findings.length?a.findings.map(f=>`• [${f.severity}] ${f.title} → ${f.area} (${f.status})`):['Sin hallazgos']),a.conclusion?`\n*Conclusión:* ${a.conclusion}`:''].join('\n')}
+function textModal(title,msg){openModal(`<h2 style="margin-bottom:8px">${esc(title)}</h2><pre class="msg">${esc(msg)}</pre><div class="row"><a class="btn pri" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent(msg)}">WhatsApp</a><button id="cpy">Copiar</button><button data-act="x">Cerrar</button></div>`);$('#cpy').onclick=async()=>{try{await navigator.clipboard.writeText(msg);toast('Copiado')}catch(e){toast('No se pudo copiar')}}}
+
+/* ---------- Acciones ---------- */
+async function createAudit(site){const a=newAudit(site);S.audits.push(a);await DB.put('audits',a);openSet.clear();go(`#/audit/${a.id}/datos`)}
+const A={
+ x:()=>closeModal(),
+ blank:()=>createAudit(),demo:()=>createAudit(demoSite()),fromsite:d=>createAudit(S.sites.find(s=>s.code===d.code)),
+ filter:d=>{S.filter[d.k]=d.v;render()},
+ fcsv:()=>shareOrDownload(`hallazgos_${today()}.csv`,csvBlob(findingRows(filtered()))),
+ fsum:()=>textModal('Resumen de hallazgos',AREAS.map(ar=>{const l=filtered().filter(x=>x.f.area===ar);return l.length?`*${ar}* (${l.length})\n`+l.map(({a,f})=>`• [${f.severity}] ${a.site.code}: ${f.title} — ${f.status}${overdue(f)?' ⚠ VENCIDO':''}`).join('\n'):''}).filter(Boolean).join('\n\n')),
+ openf:d=>{openSet.add('f:'+d.f);go(`#/audit/${d.a}/hallazgos`);setTimeout(()=>$('#f-'+d.f)?.scrollIntoView({block:'start'}),80)},
+ esc:async d=>{const a=S.audits.find(x=>x.id===d.a);if(!cur||cur.id!==a.id)S.photos=await DB.photos(a.id);escalate(a,a.findings.find(f=>f.id===d.f))},
+ gps:async(d,b)=>{const a=cur;b.disabled=true;b.textContent='Buscando posición…';try{a.visit.gps=await getGPS();touch(a)}catch(e){toast(e.message)}render()},
+ delaudit:async()=>{const a=cur;if(!await ask(`¿Eliminar la auditoría de ${a.site.code||'este sitio'} con sus fotos y hallazgos? No se puede deshacer.`,'Eliminar'))return;await flush();for(const p of await DB.photos(a.id))await DB.del('photos',p.id);await DB.del('audits',a.id);S.audits.splice(S.audits.indexOf(a),1);go('#/audits')},
+ chk:d=>{const a=cur;if(d.kind==='safety')a.safety[d.k]=d.v;else(a.check[d.k]??={}).s=d.v;touch(a);render()},
+ chkfind:d=>{const[k,l,cat]=CHECK.flatMap(g=>g[1]).find(i=>i[0]===d.k);const f=addFinding(cur,{title:`No conforme: ${l}`,category:cat,itemKey:k,desc:cur.check[k]?.note||''});A.openf({a:cur.id,f:f.id})},
+ addfind:()=>{const f=addFinding(cur,{});openSet.add('f:'+f.id);render()},
+ antfind:d=>{const n=cur.sectors[d.i].antennas[d.j],st=antStats(n),f=addFinding(cur,{antennaId:n.id,category:'Parámetros RF',title:st.ootFinal?'Parámetros fuera de tolerancia':'',severity:'Media'});A.openf({a:cur.id,f:f.id})},
+ delfind:async d=>{const a=cur;if(!await ask('¿Eliminar este hallazgo y sus fotos?','Eliminar'))return;for(const p of S.photos.filter(p=>p.tag==='f:'+d.f))await DB.del('photos',p.id);S.photos=S.photos.filter(p=>p.tag!=='f:'+d.f);a.findings=a.findings.filter(f=>f.id!==d.f);touch(a);render()},
+ note:d=>{const t=$('#note-'+d.f).value.trim();if(!t)return;cur.findings.find(f=>f.id===d.f).history.push({at:now(),text:t});touch(cur);render()},
+ addsector:()=>{cur.sectors.push(newSector(cur.sectors.length+1));touch(cur);render()},
+ delsector:async d=>{if(!await ask('¿Quitar este sector con sus antenas y fotos?','Quitar'))return;for(const n of cur.sectors[d.i].antennas)await dropAnt(n);cur.sectors.splice(d.i,1);touch(cur);render()},
+ addant:d=>{const l=cur.sectors[d.i].antennas;l.push(newAnt('Antena '+(l.length+1)));touch(cur);render()},
+ delant:async d=>{if(!await ask('¿Quitar esta antena y sus fotos?','Quitar'))return;await dropAnt(cur.sectors[d.i].antennas[d.j]);cur.sectors[d.i].antennas.splice(d.j,1);touch(cur);render()},
+ addband:d=>{const n=cur.sectors[d.i].antennas[d.j];n.bands.push(newBand(BANDS.find(b=>!n.bands.some(x=>x.name===b))));touch(cur);render()},
+ delband:async d=>{const n=cur.sectors[d.i].antennas[d.j];if(n.bands.length<2)return toast('La antena debe tener al menos una banda');if(!await ask(`¿Quitar la banda ${n.bands[d.n].name}?`,'Quitar'))return;n.bands.splice(d.n,1);stampChange(n);touch(cur);render()},
+ same:async d=>{const n=cur.sectors[d.i].antennas[d.j];if(antChanged(n)&&!await ask('Hay valores finales distintos a los encontrados. ¿Sobrescribirlos?','Sobrescribir'))return;for(const k of['az','mt','h'])n.final[k]=n.found[k];for(const b of n.bands)b.final.et=b.found.et;stampChange(n);touch(cur);render()},
+ measure:d=>{const n=cur.sectors[d.i].antennas[d.j];openModal(`<p class="mut">${esc(cur.sectors[d.i].name)} · ${esc(n.name)}</p><div id="mtool"></div><button class="full" data-act="x" style="margin-top:10px">Cerrar</button>`,stopTool);toolStop=TOOLS[d.tool]($('#mtool'),{a:cur,i:+d.i,j:+d.j})},
+ view:d=>{const p=S.photos.find(x=>x.id===d.p),a=S.audits.find(x=>x.id===p.auditId),lock=a.status==='cerrada'&&!p.tag.startsWith('f:');openModal(`<img class="big" src="${url(p)}" alt=""><p class="mut" style="margin:8px 0">${esc(photoLabel(a,p))} · ${dt(p.takenAt)}</p><label>Comentario<input id="cap" value="${esc(p.caption)}" ${lock?'disabled':''}></label><div class="row"><button class="pri" data-act="x">Listo</button><button id="dl">Descargar</button>${lock?'':'<button class="dan" id="dp">Eliminar foto</button>'}</div>`,()=>render());
+  $('#cap').oninput=async e=>{p.caption=e.target.value;await DB.put('photos',p);touch(a)};$('#dl').onclick=()=>shareOrDownload(`${slug(a.site.code)}_${slug(photoLabel(a,p))}.jpg`,p.blob);
+  const del=$('#dp');if(del)del.onclick=async()=>{if(del.dataset.sure){await DB.del('photos',p.id);S.photos=S.photos.filter(x=>x!==p);touch(a);closeModal()}else{del.dataset.sure=1;del.textContent='Confirmar eliminación'}}},
+ clearsign:()=>{cur.signature='';touch(cur);render()},
+ print:async()=>{toast('Preparando informe…');$('#print').innerHTML=`<style>${REPORT_CSS}</style>`+await reportBody(cur);await Promise.all($$('#print img').map(i=>i.decode().catch(()=>{})));window.print()},
+ rhtml:async()=>shareOrDownload(`Informe_${slug(cur.site.code)}_${cur.visit.date}.html`,new Blob([await reportHTML(cur)],{type:'text/html'})),
+ rzip:async()=>{toast('Generando paquete…');await flush();shareOrDownload(`Auditoria_${slug(cur.site.code)}_${cur.visit.date}.zip`,await buildPackage([cur],false))},
+ pcsv:()=>shareOrDownload(`parametros_${slug(cur.site.code)}_${cur.visit.date}.csv`,csvBlob(paramRows([cur]))),
+ hcsv:()=>shareOrDownload(`hallazgos_${slug(cur.site.code)}_${cur.visit.date}.csv`,csvBlob(findingRows(cur.findings.map(f=>({a:cur,f}))))),
+ summary:()=>textModal('Resumen de la auditoría',summary(cur)),
+ close:async()=>{const a=cur,v=validate(a);if(v.err.length&&a.closeNote.trim().length<10)return toast('Resuelva los pendientes o escriba una justificación (mínimo 10 caracteres)');if(!await ask(`¿Cerrar la auditoría? ${v.err.length} pendiente(s) y ${v.warn.length} advertencia(s).`,'Cerrar auditoría'))return;if(!v.err.length)a.closeNote='';a.status='cerrada';a.closedAt=now();if(!a.visit.end)a.visit.end=new Date().toTimeString().slice(0,5);touch(a);render();toast('Auditoría cerrada')},
+ reopen:async()=>{if(!await ask('¿Reabrir la auditoría? La firma se borrará.','Reabrir'))return;cur.status='en_curso';cur.closedAt=null;cur.signature='';touch(cur);render()},
+ template:()=>{const s=demoSite();const rows=[SITE_COLS];for(const sec of s.sectors)for(const n of sec.antennas)for(const b of n.bands)rows.push([s.code,s.info.name,s.info.region,s.info.state,s.info.lat,s.info.lon,s.info.height,sec.name,n.name,n.model,n.plan.az,n.plan.mt,n.plan.h,b.name,b.plan.et,b.plan.pci,n.vbw]);download('plantilla_sitios.csv',csvBlob(rows))},
+ delsites:async()=>{if(!await ask('¿Borrar la base de sitios? Las auditorías no se tocan.','Borrar'))return;for(const s of S.sites)await DB.del('sites',s.code);S.sites=[];render()},
+ backup:async()=>{toast('Generando respaldo…');await flush();const b=await buildPackage(S.audits,true);S.settings.lastBackup=now();await saveSettings();await shareOrDownload(`Respaldo_AuditoriaRF_${today()}.zip`,b);render()}
+};
+async function dropAnt(n){for(const p of S.photos.filter(p=>p.tag.startsWith(n.id+':'))){await DB.del('photos',p.id)}S.photos=S.photos.filter(p=>!p.tag.startsWith(n.id+':'));cur.findings.forEach(f=>{if(f.antennaId===n.id)f.antennaId=''})}
+
+/* ---------- Eventos y enrutado ---------- */
+document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(b){A[b.dataset.act]?.(b.dataset,b);return}if(e.target.id==='modal')closeModal()});
+document.addEventListener('toggle',e=>{const k=e.target.dataset?.key;if(k)e.target.open?openSet.add(k):openSet.delete(k)},true);
+document.addEventListener('input',e=>{const t=e.target,d=t.dataset;
+ if(d.b&&cur){const prev=getPath(cur,d.b);setPath(cur,d.b,t.value);const m=d.b.match(/^findings\.(\d+)\.(\w+)$/);
+  if(m){const f=cur.findings[m[1]];if(m[2]==='category')f.area=CATS[t.value];if(m[2]==='status'&&prev!==t.value)f.history.push({at:now(),text:`Estado: ${prev} → ${t.value}`});if(m[2]==='severity'&&f.escalatedAt)f.due=new Date(new Date(f.escalatedAt).getTime()+SEVS[t.value].h*36e5).toISOString()}
+  const am=d.b.match(/^sectors\.(\d+)\.antennas\.(\d+)\./);if(am){stampChange(cur.sectors[am[1]].antennas[am[2]]);paint();if(d.k==='az')$('#siterose').innerHTML=siteRose(cur)}
+  touch(cur)}
+ if(d.s){let v=t.value;if(d.s.startsWith('tol.')||d.s==='declination'){v=num(v);if(v===null||(d.s.startsWith('tol.')&&v<0))return}if(d.s==='stamp')v=!!v;setPath(S.settings,d.s,v);saveSettings()}
+ if(d.flt){S.filter[d.flt]=t.value;render()}
+ if(t.id==='q'){S.q=t.value;const h=V.audits(),tmp=document.createElement('div');tmp.innerHTML=h;$('#list').innerHTML=$('#list',tmp).innerHTML}
+ if(t.id==='pick')$('#picks').innerHTML=pickList(t.value)});
+document.addEventListener('change',async e=>{const t=e.target,d=t.dataset;
+ if(d.photo){const files=[...t.files],a=cur;t.value='';if(!files.length)return;toast('Procesando foto…');let n=0;for(const f of files){try{await addPhoto(a,d.photo,f);n++}catch(err){toast('No se pudo agregar la foto: '+(err?.message||err))}}if(d.photo.startsWith('f:'))openSet.add(d.photo);render();if(n)toast(`${n} foto(s) guardada(s)`);return}
+ if(d.import){const f=t.files[0];t.value='';if(!f)return;try{if(d.import==='csv'){const buf=await f.arrayBuffer();let text;try{text=new TextDecoder('utf-8',{fatal:true}).decode(buf)}catch(_){text=new TextDecoder('windows-1252').decode(buf)}const sites=sitesFromCSV(text);for(const s of sites){await DB.put('sites',s);S.sites=S.sites.filter(x=>x.code!==s.code).concat(s)}toast(`${sites.length} sitio(s) importado(s)`)}else{await flush();const r=await importPackage(f);toast(`Importadas: ${r.added} · ya al día: ${r.skipped}${r.bad?' · inválidas: '+r.bad:''}`)}render()}catch(err){toast('Error al importar: '+err.message)}return}
+ if(!d.b||!cur)return;
+ /* Los textos se refrescan en su sitio para no quitar el foco al pasar al siguiente campo. */
+ if(/^findings\.\d+\.title$/.test(d.b))$(':scope > b',t.closest('.card')).textContent=t.value||'(sin título)';
+ const bn=d.b.match(/^(.*\.bands\.\d+)\.name$/);if(bn){const l=$(`tr[data-row="${bn[1]}"] .mut`);if(l)l.textContent=t.value;paint()}
+ if(/^findings\.\d+\./.test(d.b)&&t.tagName==='SELECT')render()});
+let renderSeq=0;
+async function render(){const seq=++renderSeq,same=location.hash===lastHash,y=scrollY;
+ route=location.hash.replace(/^#\//,'').split('/');if(!V[route[0]])route=['home'];
+ if(!same){stopTool();closeModal();await flush()}
+ if(route[0]==='audit'){cur=S.audits.find(a=>a.id===route[1])||null;if(!cur){location.hash='#/audits';return}if(!same){const ph=await DB.photos(cur.id);if(seq!==renderSeq)return;S.photos=ph.sort((a,b)=>a.takenAt.localeCompare(b.takenAt))}}else cur=null;
+ const titles={home:'Auditoría RF Campo',audits:'Auditorías',new:'Nueva auditoría',findings:'Hallazgos y escalamiento',tools:'Herramientas',settings:'Ajustes'};
+ $('#title').textContent=cur?`${cur.site.code||'Nueva'} ${cur.site.name}`:titles[route[0]];
+ $('#back').hidden=!(cur||route[0]==='new'||(route[0]==='tools'&&route[1]));
+ $('main').innerHTML=V[route[0]]();
+ $$('nav a').forEach(n=>n.classList.toggle('on',n.dataset.v===(route[0]==='audit'||route[0]==='new'?'audits':route[0])));
+ if(cur){paint();drawSign();$$('[data-lock] input,[data-lock] select,[data-lock] textarea,[data-lock] button:not([data-free])').forEach(x=>x.disabled=true);$('.tabs a.on')?.scrollIntoView({block:'nearest',inline:'center'})}
+ if(route[0]==='tools'&&TOOLS[route[1]]){stopTool();toolStop=TOOLS[route[1]]($('#tool'))}
+ lastHash=location.hash;scrollTo(0,same?y:0)}
+$('#back').onclick=()=>go(cur||route[0]==='new'?'#/audits':'#/tools');
+addEventListener('hashchange',render);
+addEventListener('pagehide',()=>{flush()});
+document.addEventListener('visibilitychange',()=>{if(document.hidden)flush()});
+(async()=>{await DB.open();const s=await DB.get('meta','settings');if(s)S.settings={...DEFAULTS,...s,tol:{...DEFAULTS.tol,...s.tol},contacts:s.contacts||{}};S.audits=await DB.all('audits');S.sites=await DB.all('sites');
+ navigator.storage?.persist?.().catch(()=>{});await render();document.body.dataset.ready=1;
+ if('serviceWorker'in navigator&&(location.protocol==='https:'||location.hostname==='localhost'))navigator.serviceWorker.register('sw.js').catch(()=>{})})();
+</script>
+</body>
+</html>
